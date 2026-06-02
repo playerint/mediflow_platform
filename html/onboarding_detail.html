@@ -329,9 +329,9 @@
       </div>
     </div>
     <div class="topbar-right">
-      <button class="btn" onclick="showToast('임시 저장되었습니다.','success')">임시 저장</button>
-      <button class="btn" onclick="showToast('미리보기 준비 중...','')">미리보기</button>
-      <button class="btn btn-navy" onclick="showToast('게시 준비 중...','')">게시하기</button>
+      <button class="btn" onclick="autoSave()">임시 저장</button>
+      <button class="btn" onclick="showPreviewModal()">미리보기</button>
+      <button class="btn btn-navy" onclick="goToPublish()">게시하기</button>
     </div>
   </div>
 
@@ -764,12 +764,13 @@ var STEPS = {
     ];
 
     function assetCard(item) {
+      var safeName = item.lb.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       return '<div class="asset-card" onclick="this.classList.toggle(\'selected\')">'
         + (item.ba ? '<div class="asset-badge-ba">B/A</div>' : '')
         + '<div class="asset-thumb">' + item.em + '</div>'
         + '<div class="asset-actions">'
-        + '<button class="asset-btn" onclick="event.stopPropagation();showToast(\'' + item.lb + ' 교체\',\'\')" title="교체">↺</button>'
-        + '<button class="asset-btn" onclick="event.stopPropagation();showToast(\'' + item.lb + ' 삭제\',\'error\')" title="삭제">✕</button>'
+        + '<button class="asset-btn" onclick="event.stopPropagation();triggerFileUpload(false)" title="교체">↺</button>'
+        + '<button class="asset-btn" onclick="event.stopPropagation();deleteAsset(this,\'' + safeName + '\')" title="삭제">✕</button>'
         + '</div>'
         + '<div class="asset-meta"><div class="asset-name">' + item.lb + '</div><div class="asset-sz">' + item.sz + '</div></div>'
         + '</div>';
@@ -782,7 +783,7 @@ var STEPS = {
         + '</div>'
         + '<div class="asset-grid">'
         + items.map(assetCard).join('')
-        + '<div class="asset-add" onclick="showToast(\'파일 업로드 (데모)\',\'\')"><span style="font-size:24px">+</span><span>추가</span></div>'
+        + '<div class="asset-add" onclick="triggerFileUpload(true)"><span style="font-size:24px">+</span><span>추가</span></div>'
         + '</div></div>';
     }
 
@@ -822,8 +823,8 @@ var STEPS = {
         }).join('')
       + '</div>'
       + '<div style="display:flex;gap:8px;margin-top:8px">'
-      + '<button class="btn" onclick="showToast(\'PDF 다운로드 준비 중...\',\'\')">📄 기획안 PDF</button>'
-      + '<button class="btn" onclick="showToast(\'링크 복사됨\',\'success\')">🔗 병원 공유</button>'
+      + '<button class="btn" onclick="printBrief()">📄 기획안 PDF</button>'
+      + '<button class="btn" onclick="shareBriefUrl()">🔗 병원 공유</button>'
       + '</div></div>'
 
       + '<div style="margin-bottom:20px">'
@@ -843,7 +844,7 @@ var STEPS = {
 
       + '<div style="margin-bottom:16px">'
       + '<div class="ob-section-lbl">사진 자산</div>'
-      + '<div class="asset-upload-zone" onclick="showToast(\'파일 업로드 (데모)\',\'\')">'
+      + '<div class="asset-upload-zone" onclick="triggerFileUpload(true)">'
       + '<div style="font-size:32px;margin-bottom:8px">📁</div>'
       + '<div style="font-size:14px;font-weight:500;color:var(--s700);margin-bottom:4px">사진을 드래그하거나 클릭하여 업로드</div>'
       + '<div style="font-size:12px;color:var(--s400)">PNG, JPG, WebP · 최대 10MB · AI 자동 분류</div>'
@@ -937,8 +938,8 @@ var STEPS = {
       + '</div></div>'
 
       + '<div style="display:flex;gap:8px;margin-bottom:8px">'
-      + '<button class="btn" onclick="showToast(\'검수 리포트 PDF 준비 중...\',\'\')">📄 검수 리포트 PDF</button>'
-      + '<button class="btn" onclick="showToast(\'수정 모드 전환\',\'\')">✏ 카피 수정</button>'
+      + '<button class="btn" onclick="printReviewReport()">📄 검수 리포트 PDF</button>'
+      + '<button class="btn" id="copy-edit-btn" onclick="toggleCopyEdit(this)">✏ 카피 수정</button>'
       + '</div>'
 
       + '<div class="ob-foot">'
@@ -1067,6 +1068,148 @@ var STEPS = {
       + '</div>';
   },
 };
+
+/* ── 임시 저장 ── */
+function autoSave() {
+  try {
+    sessionStorage.setItem('ob_save_' + H.id, JSON.stringify({
+      curStep: curStep, viewStep: viewStep, analyzed: analyzed,
+      tmpl: tmpl, siteUrl: siteUrl, analysisResult: analysisResult
+    }));
+    showToast('임시 저장되었습니다.', 'success');
+  } catch(e) { showToast('저장에 실패했습니다.', 'error'); }
+}
+
+/* ── 미리보기 모달 ── */
+function showPreviewModal() {
+  var prev = document.getElementById('__preview-modal');
+  if (prev) prev.remove();
+  var m = document.createElement('div');
+  m.id = '__preview-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:flex;align-items:center;justify-content:center';
+  m.innerHTML = '<div style="background:#fff;border-radius:20px;padding:24px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,.3)">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+    + '<div style="font-size:15px;font-weight:700;color:var(--navy)">미리보기</div>'
+    + '<button onclick="document.getElementById(\'__preview-modal\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--s400)">✕</button>'
+    + '</div>'
+    + '<div class="phone-frame"><div class="phone-screen">'
+    + '<div class="phone-topbar">'
+    + '<span style="font-size:10px;font-weight:700;color:#fff">' + H.nameJa + '</span>'
+    + '<div style="display:flex;gap:5px;font-size:8px;color:rgba(255,255,255,.5)"><span>시술</span><span>의료진</span><span>후기</span><span>비용</span></div>'
+    + '</div>'
+    + '<div class="phone-hero">'
+    + '<div style="font-size:13px;font-weight:700;color:var(--navy);line-height:1.6">「変わったね」では<br>なく「<span style="color:#E91E8C">綺麗に<br>なったね</span>」と<br>言われる手術を。</div>'
+    + '<div style="background:#06C755;color:#fff;font-size:10px;font-weight:700;padding:7px 14px;border-radius:6px;display:inline-block;margin-top:10px">LINE で相談</div>'
+    + '</div>'
+    + '<div class="phone-menu">' + ['二重整形','鼻整形','輪郭','ドクター','費用','FAQ'].map(function(x){return '<div class="phone-menu-item">'+x+'</div>';}).join('') + '</div>'
+    + '</div></div>'
+    + '<div style="display:flex;gap:8px;margin-top:16px">'
+    + '<button class="btn" style="flex:1;justify-content:center" onclick="document.getElementById(\'__preview-modal\').remove()">닫기</button>'
+    + '<button class="btn btn-navy" style="flex:1;justify-content:center" onclick="goToPublish()">게시하기 →</button>'
+    + '</div></div>';
+  m.addEventListener('click', function(e){ if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+/* ── 게시 단계로 이동 ── */
+function goToPublish() {
+  var prev = document.getElementById('__preview-modal');
+  if (prev) prev.remove();
+  curStep = Math.max(curStep, 5);
+  goStep(5);
+}
+
+/* ── 파일 업로드 트리거 ── */
+function triggerFileUpload(multiple) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = !!multiple;
+  input.onchange = function() {
+    if (this.files && this.files.length) {
+      showToast('✓ ' + this.files.length + '개 파일 업로드 완료', 'success');
+    }
+  };
+  input.click();
+}
+
+/* ── 자산 삭제 ── */
+function deleteAsset(btn, name) {
+  if (!confirm('"' + name + '"을 삭제하시겠습니까?')) return;
+  var card = btn.closest('.asset-card');
+  card.style.opacity = '0'; card.style.transition = 'opacity .2s';
+  setTimeout(function(){ card.remove(); }, 200);
+  showToast('"' + name + '" 삭제되었습니다.', '');
+}
+
+/* ── 기획안 PDF 프린트 ── */
+function printBrief() {
+  var r = analysisResult || {};
+  var strategies = (r.strategies && r.strategies.length) ? r.strategies :
+    [{title:'7개 분야 카테고리 분기',desc:'일본 환자 의사결정 분기점'},{title:'의사 매칭 카드',desc:'케이스 기반 자동 팀플'},{title:'4중 CTA — LINE 우선',desc:'LINE/예약폼/전화 타겟팅'},{title:'D+3/7/14 팔로잉',desc:'수술 후 자동 리타겟팅'}];
+  var kws = (r.keywords && r.keywords.length) ? r.keywords : [];
+  var w = window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>기획안 — '+H.name+'</title>'
+    +'<style>body{font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto}h1{font-size:22px;color:#0D1B3E;margin-bottom:4px}h2{font-size:14px;color:#6B7280;font-weight:400;margin-bottom:32px}h3{font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}.sec{margin-bottom:28px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.box{border:1px solid #E5E7EB;border-radius:8px;padding:14px 16px}.bt{font-size:13px;font-weight:600;margin-bottom:4px}.bd{font-size:12px;color:#6B7280}.chip{display:inline-block;font-size:12px;padding:3px 10px;border-radius:4px;background:#F3F4F6;color:#374151;margin:2px}.pos{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:14px;font-size:13px;line-height:1.7}footer{margin-top:40px;font-size:11px;color:#9CA3AF}@media print{button{display:none}}</style>'
+    +'</head><body>'
+    +'<h1>📋 글로벌 홈페이지 기획안</h1>'
+    +'<h2>'+H.name+' ('+H.nameJa+') · '+H.specialty+'</h2>'
+    +'<div class="sec"><h3>포지셔닝 진단</h3><div class="pos">'+(r.positioning||H.name+'는 일본 시장 진출을 위한 포지셔닝 전략입니다.')+'</div></div>'
+    +'<div class="sec"><h3>추천 전략</h3><div class="grid">'+strategies.map(function(s){return '<div class="box"><div class="bt">'+s.title+'</div><div class="bd">'+s.desc+'</div></div>';}).join('')+'</div></div>'
+    +(kws.length ? '<div class="sec"><h3>SEO 키워드</h3>'+kws.map(function(k){return '<span class="chip">'+k+'</span>';}).join('')+'</div>' : '')
+    +'<footer>생성일: '+new Date().toLocaleDateString('ko-KR')+' | MEDIFLOW 글로벌 메디컬 플로우</footer>'
+    +'<script>window.onload=function(){window.print()}<\/script>'
+    +'</body></html>');
+  w.document.close();
+}
+
+/* ── 링크 공유 (클립보드) ── */
+function shareBriefUrl() {
+  var url = location.href;
+  function fallback() {
+    var el = document.createElement('textarea');
+    el.value = url; el.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(el); el.select();
+    try { document.execCommand('copy'); showToast('링크가 복사되었습니다.', 'success'); } catch(e) { showToast('복사에 실패했습니다.', 'error'); }
+    document.body.removeChild(el);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function(){ showToast('링크가 클립보드에 복사되었습니다.', 'success'); }).catch(fallback);
+  } else { fallback(); }
+}
+
+/* ── 검수 리포트 PDF 프린트 ── */
+function printReviewReport() {
+  var tbody = document.getElementById('copy-tbody');
+  if (!tbody) { showToast('검수 내용이 없습니다.', 'error'); return; }
+  var w = window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>검수 리포트 — '+H.name+'</title>'
+    +'<style>body{font-family:sans-serif;padding:40px;color:#111}h1{font-size:20px;color:#0D1B3E;margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:20px}th{background:#F9FAFB;padding:8px 12px;border-bottom:2px solid #E5E7EB;text-align:left;font-size:11px;text-transform:uppercase;color:#6B7280}td{padding:10px 12px;border-bottom:1px solid #E5E7EB;vertical-align:top}@media print{button{display:none}}</style>'
+    +'</head><body>'
+    +'<h1>📋 일본어 카피 검수 리포트</h1>'
+    +'<p style="font-size:13px;color:#6B7280">'+H.name+' ('+H.nameJa+') · 생성일: '+new Date().toLocaleDateString('ko-KR')+'</p>'
+    +'<table><thead><tr><th>섹션</th><th>한국 원문</th><th>일본어 재집필</th><th>상태</th></tr></thead>'
+    +'<tbody>'+tbody.innerHTML+'</tbody></table>'
+    +'<script>window.onload=function(){window.print()}<\/script>'
+    +'</body></html>');
+  w.document.close();
+}
+
+/* ── 카피 수정 (contenteditable 토글) ── */
+function toggleCopyEdit(btn) {
+  var tbody = document.getElementById('copy-tbody');
+  if (!tbody) return;
+  var cells = tbody.querySelectorAll('tr td:nth-child(3)');
+  var isEditing = cells.length && cells[0].contentEditable === 'true';
+  cells.forEach(function(cell) {
+    cell.contentEditable = isEditing ? 'false' : 'true';
+    cell.style.background = isEditing ? '' : '#FFFDE7';
+    cell.style.outline = isEditing ? '' : '1.5px solid #F59E0B';
+    cell.style.borderRadius = isEditing ? '' : '4px';
+  });
+  btn.textContent = isEditing ? '✏ 카피 수정' : '✓ 수정 완료';
+  if (isEditing) showToast('카피 수정 내용이 저장되었습니다.', 'success');
+}
 
 /* ── 유틸 ── */
 function publishSite() {
