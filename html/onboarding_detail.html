@@ -356,6 +356,7 @@
 
 <script src="../js/auth.js"></script>
 <script src="../js/sidebar.js"></script>
+<script src="../js/config.js"></script>
 <script>
 /* ── 데이터 ── */
 var HOSPITALS = [
@@ -374,8 +375,7 @@ var OB_STEPS = [
 ];
 
 /* ── Gemini ── */
-var GEMINI_API_KEY = window.GEMINI_KEY || '';  // 환경변수 또는 config.js에서 주입
-var GEMINI_URL     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+var GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + (typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '');
 
 var p       = new URLSearchParams(location.search);
 var hospId  = parseInt(p.get('id')) || 1;
