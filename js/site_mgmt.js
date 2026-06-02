@@ -23,14 +23,14 @@ const tbody = document.getElementById('site-tbody');
 const active = HOSPITALS.filter(h=>h.status==='active');
 active.forEach(h=>{
   const compBadge = h.compliance>0 ? `<span class="badge badge-red">위반 ${h.compliance}건</span>` : `<span class="badge badge-green">정상</span>`;
-  tbody.innerHTML += `<tr onclick="alert('${h.name} 사이트 관리 → 병원 관리자 페이지로 이동')">
+  tbody.innerHTML += `<tr onclick="location.href='hospital_detail.html?id=${h.id}'" style="cursor:pointer">
     <td><div style="font-size:13px;font-weight:500">${h.name}</div><div style="font-size:12px;color:var(--gray-400)">${h.nameJa}</div></td>
     <td style="font-size:12px;color:var(--teal);font-family:monospace">${h.url}</td>
     <td><span class="badge badge-green">게시 중</span></td>
     <td>${compBadge}</td>
     <td style="font-size:12px;color:var(--gray-500)">오늘 14:23</td>
     <td><span class="badge badge-green">98점</span></td>
-    <td><button class="btn" style="font-size:12px;padding:4px 10px" onclick="event.stopPropagation();alert('병원 관리자 페이지 열기')">관리 →</button></td>
+    <td><button class="btn" style="font-size:12px;padding:4px 10px" onclick="event.stopPropagation();location.href='hospital_detail.html?id=${h.id}'">관리 →</button></td>
   </tr>`;
 });
 let currentFilter='all';

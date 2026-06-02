@@ -215,22 +215,63 @@ function saveMemberRole(name) {
   showToast(`${name}의 권한이 ${label}으로 변경되었습니다.`, 'success');
 }
 function resetMemberPw(name, email) {
-  if (!confirm(`${name}(${email})의 비밀번호를 초기화하시겠습니까?`)) return;
-  closeSettingsModal();
-  showToast(`${email}로 임시 비밀번호가 발송되었습니다.`, 'success');
+  openSettingsConfirm(`${name}(${email})의 비밀번호를 초기화하시겠습니까?`, function() {
+    closeSettingsModal();
+    showToast(`${email}로 임시 비밀번호가 발송되었습니다.`, 'success');
+  }, '초기화', false);
 }
 function removeMember(name) {
-  if (!confirm(`"${name}" 계정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
-  closeSettingsModal();
-  showToast(`${name} 계정이 삭제되었습니다.`, '');
+  openSettingsConfirm(`<strong>"${name}"</strong> 계정을 삭제하시겠습니까?<br><span style="font-size:12px;color:#9CA3AF">이 작업은 되돌릴 수 없습니다.</span>`, function() {
+    closeSettingsModal();
+    showToast(`${name} 계정이 삭제되었습니다.`, '');
+  }, '삭제', true);
 }
 
 /* ── 시스템 초기화 ── */
 function confirmSystemReset() {
-  if (!confirm('모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
-  const code = prompt('확인을 위해 "RESET"을 정확히 입력하세요:');
-  if (code !== 'RESET') { showToast('초기화가 취소되었습니다.', ''); return; }
-  try { sessionStorage.clear(); } catch(e) {}
-  showToast('시스템이 초기화되었습니다.', 'success');
-  setTimeout(() => location.href = '../index.html', 2000);
+  openSettingsConfirm('모든 데이터를 초기화하시겠습니까?<br><span style="font-size:12px;color:#9CA3AF">이 작업은 되돌릴 수 없습니다.</span>', function() {
+    openSettingsInput('확인 입력', '초기화를 진행하려면 <strong>RESET</strong>을 정확히 입력하세요.', function(code) {
+      if (code !== 'RESET') { showToast('초기화가 취소되었습니다.', ''); return; }
+      try { sessionStorage.clear(); } catch(e) {}
+      showToast('시스템이 초기화되었습니다.', 'success');
+      setTimeout(() => location.href = '../index.html', 2000);
+    });
+  }, '초기화', true);
+}
+
+function openSettingsConfirm(msg, onConfirm, confirmLabel, isDanger) {
+  var e = document.getElementById('__sc-modal'); if(e) e.remove();
+  var m = document.createElement('div'); m.id = '__sc-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center';
+  var btnStyle = isDanger ? 'background:#DC2626;color:#fff' : 'background:#0F1E3C;color:#fff';
+  m.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)">'
+    + '<div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">' + msg + '</div>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+    + '<button onclick="document.getElementById(\'__sc-modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button>'
+    + '<button id="__sc-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;' + btnStyle + '">' + (confirmLabel||'확인') + '</button>'
+    + '</div></div>';
+  m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
+  document.getElementById('__sc-ok').addEventListener('click', function(){ m.remove(); if(typeof onConfirm==='function') onConfirm(); });
+}
+
+function openSettingsInput(title, msg, onSubmit) {
+  var e = document.getElementById('__si-modal'); if(e) e.remove();
+  var m = document.createElement('div'); m.id = '__si-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9600;display:flex;align-items:center;justify-content:center';
+  m.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2)">'
+    + '<div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">' + title + '</div>'
+    + '<div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:14px">' + msg + '</div>'
+    + '<input id="__si-input" type="text" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:16px">'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+    + '<button onclick="document.getElementById(\'__si-modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button>'
+    + '<button id="__si-ok" style="padding:8px 16px;border-radius:8px;border:none;background:#DC2626;color:#fff;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500">확인</button>'
+    + '</div></div>';
+  m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
+  var inp = document.getElementById('__si-input');
+  inp.focus();
+  document.getElementById('__si-ok').addEventListener('click', function(){
+    var val = inp.value; m.remove(); if(typeof onSubmit==='function') onSubmit(val);
+  });
 }

@@ -499,16 +499,19 @@ function openSite() {
   window.open(url, '_blank');
 }
 
+function openModal(title,body,onConfirm,confirmLabel,confirmCls){var e=document.getElementById('__modal');if(e)e.remove();var m=document.createElement('div');m.id='__modal';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center';m.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">'+title+'</div><div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">'+body+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button onclick="document.getElementById(\'__modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button><button id="__modal-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;'+(confirmCls==='btn-danger'?'background:#DC2626;color:#fff':'background:#0F1E3C;color:#fff')+'">'+(confirmLabel||'확인')+'</button></div></div>';m.addEventListener('click',function(e){if(e.target===m)m.remove();});document.body.appendChild(m);document.getElementById('__modal-ok').addEventListener('click',function(){m.remove();if(typeof onConfirm==='function')onConfirm();});}
+
 // ── 일시정지 / 재개 ──
 function togglePause() {
   const isPaused = H.status === 'paused';
   const msg = isPaused
     ? `${H.name}의 일시정지를 해제하시겠습니까?`
-    : `${H.name}을 일시정지 처리하시겠습니까?\n일시정지 중에는 사이트가 비공개 처리됩니다.`;
-  if (!confirm(msg)) return;
-  H.status = isPaused ? 'active' : 'paused';
-  renderHero();
-  showToast(isPaused ? '일시정지가 해제되었습니다.' : `${H.name}이 일시정지 처리되었습니다.`, isPaused ? 'success' : '');
+    : `${H.name}을 일시정지 처리하시겠습니까?<br><span style="font-size:12px;color:#9CA3AF">일시정지 중에는 사이트가 비공개 처리됩니다.</span>`;
+  openModal(isPaused ? '▶ 일시정지 해제' : '⏸ 일시정지', msg, function() {
+    H.status = isPaused ? 'active' : 'paused';
+    renderHero();
+    showToast(isPaused ? '일시정지가 해제되었습니다.' : `${H.name}이 일시정지 처리되었습니다.`, isPaused ? 'success' : '');
+  }, isPaused ? '해제' : '일시정지', isPaused ? '' : 'btn-danger');
 }
 
 // ── 병원 정보 편집 ──
@@ -519,19 +522,21 @@ function editHospitalInfo() {
 
 // ── 컴플라이언스 처리 ──
 function handleCompliance(btn) {
-  if (!confirm('이 위반 항목을 처리 완료로 표시하시겠습니까?')) return;
-  const item = btn.closest('div[style*="background:var(--red-l)"]') || btn.closest('div[style*="background:var(--amber-l)"]') || btn.parentElement;
-  item.style.opacity = '0';
-  item.style.transition = 'opacity .3s';
-  setTimeout(() => {
-    item.remove();
-    H.compliance = Math.max(0, H.compliance - 1);
-    const list = document.getElementById('compliance-list');
-    if (list && !list.querySelector('button')) {
-      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">✓ 컴플라이언스 위반 없음</div>';
-    }
-  }, 300);
-  showToast('위반 항목이 처리되었습니다.', 'success');
+  const _btn = btn;
+  openModal('✓ 위반 처리', '이 위반 항목을 처리 완료로 표시하시겠습니까?', function() {
+    const item = _btn.closest('div[style*="background:var(--red-l)"]') || _btn.closest('div[style*="background:var(--amber-l)"]') || _btn.parentElement;
+    item.style.opacity = '0';
+    item.style.transition = 'opacity .3s';
+    setTimeout(() => {
+      item.remove();
+      H.compliance = Math.max(0, H.compliance - 1);
+      const list = document.getElementById('compliance-list');
+      if (list && !list.querySelector('button')) {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">✓ 컴플라이언스 위반 없음</div>';
+      }
+    }, 300);
+    showToast('위반 항목이 처리되었습니다.', 'success');
+  }, '처리 완료', 'btn-primary');
 }
 
 // ── CRM 인라인 답변 ──

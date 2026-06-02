@@ -1135,11 +1135,12 @@ function triggerFileUpload(multiple) {
 
 /* ── 자산 삭제 ── */
 function deleteAsset(btn, name) {
-  if (!confirm('"' + name + '"을 삭제하시겠습니까?')) return;
-  var card = btn.closest('.asset-card');
-  card.style.opacity = '0'; card.style.transition = 'opacity .2s';
-  setTimeout(function(){ card.remove(); }, 200);
-  showToast('"' + name + '" 삭제되었습니다.', '');
+  var _card = btn.closest('.asset-card');
+  openOBModal('🗑 자산 삭제', '"<strong>' + name + '</strong>"을 삭제하시겠습니까?', function() {
+    _card.style.opacity = '0'; _card.style.transition = 'opacity .2s';
+    setTimeout(function(){ _card.remove(); }, 200);
+    showToast('"' + name + '" 삭제되었습니다.', '');
+  }, '삭제', true);
 }
 
 /* ── 기획안 PDF 프린트 ── */
@@ -1213,10 +1214,27 @@ function toggleCopyEdit(btn) {
 
 /* ── 유틸 ── */
 function publishSite() {
-  if (confirm(H.name + ' 사이트를 게시하시겠습니까?')) {
+  openOBModal('🚀 사이트 게시', H.name + ' 사이트를 게시하시겠습니까?', function() {
     showToast('🚀 ' + H.name + ' 사이트가 게시되었습니다!', 'success');
     setTimeout(function(){ location.href = 'hospital_detail.html?id=' + H.id; }, 1800);
-  }
+  }, '게시', false);
+}
+
+function openOBModal(title, body, onConfirm, confirmLabel, isDanger) {
+  var e = document.getElementById('__ob-modal'); if(e) e.remove();
+  var m = document.createElement('div'); m.id = '__ob-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center';
+  var btnBg = isDanger ? 'background:#DC2626;color:#fff' : 'background:#0F1E3C;color:#fff';
+  m.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)">'
+    + '<div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">' + title + '</div>'
+    + '<div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">' + body + '</div>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+    + '<button onclick="document.getElementById(\'__ob-modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button>'
+    + '<button id="__ob-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;' + btnBg + '">' + (confirmLabel||'확인') + '</button>'
+    + '</div></div>';
+  m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
+  document.getElementById('__ob-ok').addEventListener('click', function(){ m.remove(); if(typeof onConfirm==='function') onConfirm(); });
 }
 
 function showToast(msg, type) {

@@ -97,8 +97,11 @@ function printReceipt(name, plan) {
   w.document.close();
 }
 
+function openModal(title,body,onConfirm,confirmLabel,confirmCls){var e=document.getElementById('__modal');if(e)e.remove();var m=document.createElement('div');m.id='__modal';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center';m.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">'+title+'</div><div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">'+body+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button onclick="document.getElementById(\'__modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button><button id="__modal-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;'+(confirmCls==='btn-danger'?'background:#DC2626;color:#fff':'background:#0F1E3C;color:#fff')+'">'+(confirmLabel||'확인')+'</button></div></div>';m.addEventListener('click',function(e){if(e.target===m)m.remove();});document.body.appendChild(m);document.getElementById('__modal-ok').addEventListener('click',function(){m.remove();if(typeof onConfirm==='function')onConfirm();});}
+
 /* ── 납부 독촉 ── */
 function sendPaymentReminder(name) {
-  if (!confirm(`"${name}"에 납부 독촉 메시지를 발송하시겠습니까?`)) return;
-  showToast(`${name}에 납부 독촉 메시지가 발송되었습니다.`, 'success');
+  openModal('📤 납부 독촉 발송', `<strong>${name}</strong>에 납부 독촉 메시지를 발송하시겠습니까?`, function() {
+    showToast(`${name}에 납부 독촉 메시지가 발송되었습니다.`, 'success');
+  }, '발송', 'btn-primary');
 }

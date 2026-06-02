@@ -237,10 +237,13 @@ function saveContractEdit(id) {
 /* ── 계약 해지 ── */
 function terminateContract(id) {
   const h = HOSPITALS.find(x=>x.id===id);
-  if (!confirm(`"${h.name}" 계약을 해지하시겠습니까?\n해지 후에는 서비스 접근이 중단됩니다.`)) return;
-  closeModal('__contract-detail');
-  showToast(`${h.name} 계약이 해지되었습니다.`, '');
+  openModal('⚠ 계약 해지', `<strong>${h.name}</strong> 계약을 해지하시겠습니까?<br><span style="font-size:12px;color:#9CA3AF">해지 후에는 서비스 접근이 중단됩니다.</span>`, function() {
+    closeModal('__contract-detail');
+    showToast(`${h.name} 계약이 해지되었습니다.`, '');
+  }, '해지', 'btn-danger');
 }
+
+function openModal(title,body,onConfirm,confirmLabel,confirmCls){var e=document.getElementById('__modal');if(e)e.remove();var m=document.createElement('div');m.id='__modal';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center';m.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">'+title+'</div><div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">'+body+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button onclick="document.getElementById(\'__modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button><button id="__modal-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;'+(confirmCls==='btn-danger'?'background:#DC2626;color:#fff':'background:#0F1E3C;color:#fff')+'">'+(confirmLabel||'확인')+'</button></div></div>';m.addEventListener('click',function(e){if(e.target===m)m.remove();});document.body.appendChild(m);document.getElementById('__modal-ok').addEventListener('click',function(){m.remove();if(typeof onConfirm==='function')onConfirm();});}
 
 /* ── 계약서 출력 ── */
 function printContractDoc(id) {

@@ -42,10 +42,24 @@ function getLoginPath() {
   return location.pathname.includes('/html/') ? '../login.html' : 'login.html';
 }
 function logout() {
-  if (confirm('로그아웃 하시겠습니까?')) {
+  var prev = document.getElementById('__logout-modal');
+  if (prev) prev.remove();
+  var m = document.createElement('div');
+  m.id = '__logout-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+  m.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)">'
+    + '<div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">로그아웃</div>'
+    + '<div style="font-size:13px;color:#374151;margin-bottom:20px">로그아웃 하시겠습니까?</div>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+    + '<button onclick="document.getElementById(\'__logout-modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button>'
+    + '<button id="__logout-confirm" style="padding:8px 16px;border-radius:8px;border:none;background:#0F1E3C;color:#fff;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500">로그아웃</button>'
+    + '</div></div>';
+  document.body.appendChild(m);
+  document.getElementById('__logout-confirm').addEventListener('click', function() {
+    m.remove();
     clearSession();
     location.href = getLoginPath();
-  }
+  });
 }
 function canAccess(menuKey) {
   const user = getSession();

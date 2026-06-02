@@ -146,18 +146,25 @@ function renderDraftBanner() {
     </tr>`).join('');
 }
 
+function showToast(msg,type){var e=document.getElementById('__toast');if(e)e.remove();var bg=type==='success'?'#059669':type==='error'?'#DC2626':'#0F1E3C';var t=document.createElement('div');t.id='__toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){t.remove();},300);},2500);}
+function openModal(title,body,onConfirm,confirmLabel,confirmCls){var e=document.getElementById('__modal');if(e)e.remove();var m=document.createElement('div');m.id='__modal';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center';m.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#0F1E3C;margin-bottom:10px">'+title+'</div><div style="font-size:13px;color:#374151;line-height:1.7;margin-bottom:20px">'+body+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button onclick="document.getElementById(\'__modal\').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer">취소</button><button id="__modal-ok" style="padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;'+(confirmCls==='btn-danger'?'background:#DC2626;color:#fff':'background:#0F1E3C;color:#fff')+'">'+(confirmLabel||'확인')+'</button></div></div>';m.addEventListener('click',function(e){if(e.target===m)m.remove();});document.body.appendChild(m);document.getElementById('__modal-ok').addEventListener('click',function(){m.remove();if(typeof onConfirm==='function')onConfirm();});}
+
 function deleteDraft(id) {
-  if (!confirm('이 임시저장 항목을 삭제하시겠습니까?')) return;
-  let drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
-  drafts = drafts.filter(d => d._draftId !== id);
-  sessionStorage.setItem('ippeo_drafts', JSON.stringify(drafts));
-  renderDraftBanner();
+  openModal('🗑 임시저장 삭제', '이 임시저장 항목을 삭제하시겠습니까?', function() {
+    let drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+    drafts = drafts.filter(d => d._draftId !== id);
+    sessionStorage.setItem('ippeo_drafts', JSON.stringify(drafts));
+    renderDraftBanner();
+    showToast('✓ 삭제되었습니다.', '');
+  }, '삭제', 'btn-danger');
 }
 
 function deleteAllDrafts() {
-  if (!confirm('임시저장된 항목을 모두 삭제하시겠습니까?')) return;
-  sessionStorage.removeItem('ippeo_drafts');
-  renderDraftBanner();
+  openModal('🗑 전체 삭제', '임시저장된 항목을 모두 삭제하시겠습니까?', function() {
+    sessionStorage.removeItem('ippeo_drafts');
+    renderDraftBanner();
+    showToast('✓ 전체 삭제되었습니다.', '');
+  }, '전체 삭제', 'btn-danger');
 }
 
 let _bannerOpen = true;
