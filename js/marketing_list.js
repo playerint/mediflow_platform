@@ -37,6 +37,35 @@ const rtEl = document.getElementById('retarget-list');
   </div>`;
 });
 
+function showToast(msg,type){const e=document.getElementById('__toast');if(e)e.remove();const bg=type==='success'?'#059669':type==='error'?'#DC2626':'#0F1E3C';const t=document.createElement('div');t.id='__toast';t.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},2500);}
+
+function printMarketingReport() {
+  const month = document.querySelector('select').value || '2026년 5월';
+  const active = HOSPITALS.filter(h => h.status === 'active');
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>마케팅 리포트 — ${month}</title>
+  <style>body{font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto}h1{font-size:20px;color:#0D1B3E;margin-bottom:4px}h2{font-size:13px;color:#6B7280;font-weight:400;margin-bottom:28px}h3{font-size:13px;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}.sec{margin-bottom:28px}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#F9FAFB;padding:8px 12px;border-bottom:2px solid #E5E7EB;text-align:left;font-size:11px;text-transform:uppercase;color:#6B7280}td{padding:10px 12px;border-bottom:1px solid #E5E7EB}footer{margin-top:40px;font-size:11px;color:#9CA3AF;text-align:center}@media print{button{display:none}}</style>
+  </head><body>
+  <h1>📈 마케팅 통합 리포트</h1>
+  <h2>MEDIFLOW 플랫폼 · ${month}</h2>
+  <div class="sec">
+    <h3>AEO 인용 현황</h3>
+    <table><thead><tr><th>병원명</th><th>AEO 인용 수</th><th>LINE 해결률</th><th>전환율</th></tr></thead><tbody>
+    ${active.sort((a,b)=>b.aeo-a.aeo).map(h=>`<tr><td>${h.name}</td><td>${h.aeo}회</td><td>${h.lineRate}%</td><td>${h.conv}%</td></tr>`).join('')}
+    </tbody></table>
+  </div>
+  <div class="sec">
+    <h3>방문자 & 전환 비교</h3>
+    <table><thead><tr><th>병원명</th><th>방문자</th><th>문의</th><th>전환율</th></tr></thead><tbody>
+    ${active.map(h=>`<tr><td>${h.name}</td><td>${h.visitors.toLocaleString()}</td><td>${h.inq}건</td><td>${h.conv}%</td></tr>`).join('')}
+    </tbody></table>
+  </div>
+  <footer>생성일: ${new Date().toLocaleDateString('ko-KR')} | MEDIFLOW 글로벌 메디컬 플로우</footer>
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
 new Chart(document.getElementById('convChart'),{type:'bar',
   data:{labels:HOSPITALS.filter(h=>h.status==='active').map(h=>h.name.slice(0,4)),
     datasets:[

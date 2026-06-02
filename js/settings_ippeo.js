@@ -16,7 +16,7 @@ const SECTIONS = {
   team: `<div class="card fade">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div style="font-size:15px;font-weight:700;color:var(--navy)">👥 팀 계정 관리</div>
-      <button class="btn btn-primary" style="font-size:12px" onclick="alert('초대 이메일 발송')">+ 멤버 초대</button>
+      <button class="btn btn-primary" style="font-size:12px" onclick="openInviteModal()">+ 멤버 초대</button>
     </div>
     ${[
       {name:'김운영',email:'admin@ippeo.co.kr',role:'super',last:'방금'},
@@ -27,7 +27,7 @@ const SECTIONS = {
       <div style="flex:1"><div style="font-size:13px;font-weight:500">${m.name}</div><div style="font-size:12px;color:var(--gray-400)">${m.email}</div></div>
       <span class="role-${m.role}">${m.role==='super'?'슈퍼 어드민':m.role==='ops'?'운영팀':'재무팀'}</span>
       <span style="font-size:12px;color:var(--gray-400)">${m.last}</span>
-      <button class="btn btn-danger" style="font-size:12px;padding:3px 8px" onclick="alert('${m.name} 계정 관리')">관리</button>
+      <button class="btn btn-danger" style="font-size:12px;padding:3px 8px" onclick="openMemberManage('${m.name}','${m.email}','${m.role}')">관리</button>
     </div>`).join('')}
   </div>`,
 
@@ -91,7 +91,7 @@ const SECTIONS = {
     <div style="background:var(--red-l);border:1px solid #FCA5A5;border-radius:var(--rl);padding:16px 20px">
       <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px">⚠ 위험 구역</div>
       <div style="font-size:12px;color:#991B1B;margin-bottom:12px">모든 데이터를 초기화합니다. 이 작업은 되돌릴 수 없습니다.</div>
-      <button class="btn btn-danger" onclick="alert('슈퍼 어드민 권한 확인 후 진행 가능합니다.')">시스템 초기화</button>
+      <button class="btn btn-danger" onclick="confirmSystemReset()">시스템 초기화</button>
     </div>
   </div>`,
 };
@@ -114,3 +114,123 @@ function showSec(key, btn) {
 }
 
 showSec('profile', document.querySelector('.sn-item'));
+
+/* ── 유틸 ── */
+function showToast(msg,type){const e=document.getElementById('__toast');if(e)e.remove();const bg=type==='success'?'#059669':type==='error'?'#DC2626':'#0F1E3C';const t=document.createElement('div');t.id='__toast';t.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},2500);}
+function closeSettingsModal(id='__s-modal'){const m=document.getElementById(id);if(m)m.remove();}
+function makeSettingsModal(content){
+  closeSettingsModal();
+  const m=document.createElement('div');m.id='__s-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden">${content}</div>`;
+  m.addEventListener('click',e=>{if(e.target===m)closeSettingsModal();});
+  document.body.appendChild(m);
+}
+
+/* ── 💾 설정 저장 ── */
+function saveSettings() {
+  const inputs = document.querySelectorAll('#sec-content input, #sec-content select, #sec-content textarea');
+  if (!inputs.length) { showToast('저장할 설정이 없습니다.', ''); return; }
+  const data = {};
+  inputs.forEach(el => {
+    const key = el.id || el.name || el.placeholder;
+    if (key) data[key] = el.type==='checkbox' ? el.checked : el.value;
+  });
+  try { sessionStorage.setItem('ippeo_settings', JSON.stringify(data)); } catch(e) {}
+  showToast('설정이 저장되었습니다.', 'success');
+}
+
+/* ── 멤버 초대 모달 ── */
+function openInviteModal() {
+  makeSettingsModal(`
+    <div style="padding:22px 26px;border-bottom:1px solid var(--gray-100)">
+      <div style="font-size:16px;font-weight:700;color:var(--navy)">👥 멤버 초대</div>
+    </div>
+    <div style="padding:22px 26px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:5px">이메일 주소 <span style="color:var(--red)">*</span></div>
+        <input type="email" id="invite-email" placeholder="초대할 이메일을 입력하세요" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:5px">권한</div>
+        <select id="invite-role" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="ops">운영팀</option>
+          <option value="finance">재무팀</option>
+          <option value="super">슈퍼 어드민</option>
+        </select>
+      </div>
+      <div style="background:var(--gray-50);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gray-500)">
+        초대 이메일이 발송되며, 수신자가 링크를 클릭하면 계정이 생성됩니다.
+      </div>
+    </div>
+    <div style="padding:16px 26px;background:var(--gray-50);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeSettingsModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitInvite()">초대 발송</button>
+    </div>
+  `);
+  setTimeout(()=>document.getElementById('invite-email')?.focus(), 100);
+}
+function submitInvite() {
+  const email = document.getElementById('invite-email')?.value.trim();
+  const role  = document.getElementById('invite-role')?.value;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('올바른 이메일을 입력하세요.', 'error'); return; }
+  closeSettingsModal();
+  showToast(`✓ ${email}로 초대 이메일이 발송되었습니다.`, 'success');
+}
+
+/* ── 멤버 관리 모달 ── */
+function openMemberManage(name, email, role) {
+  const roleLabel = role==='super'?'슈퍼 어드민':role==='ops'?'운영팀':'재무팀';
+  makeSettingsModal(`
+    <div style="padding:22px 26px;border-bottom:1px solid var(--gray-100)">
+      <div style="font-size:16px;font-weight:700;color:var(--navy)">👤 ${name} 계정 관리</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-top:2px">${email}</div>
+    </div>
+    <div style="padding:22px 26px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:5px">권한 변경</div>
+        <select id="member-role" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="ops" ${role==='ops'?'selected':''}>운영팀</option>
+          <option value="finance" ${role==='finance'?'selected':''}>재무팀</option>
+          <option value="super" ${role==='super'?'selected':''}>슈퍼 어드민</option>
+        </select>
+      </div>
+      <div style="padding:12px 14px;background:var(--amber-l);border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E">
+        ⚠ 비밀번호 초기화 시 해당 이메일로 임시 비밀번호가 발송됩니다.
+      </div>
+    </div>
+    <div style="padding:16px 26px;background:var(--gray-50);display:flex;gap:8px">
+      <button class="btn btn-danger" style="font-size:12px" onclick="removeMember('${name}')">계정 삭제</button>
+      <button class="btn" style="font-size:12px" onclick="resetMemberPw('${name}','${email}')">비밀번호 초기화</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="closeSettingsModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveMemberRole('${name}')">저장</button>
+    </div>
+  `);
+}
+function saveMemberRole(name) {
+  const role = document.getElementById('member-role')?.value;
+  const label = role==='super'?'슈퍼 어드민':role==='ops'?'운영팀':'재무팀';
+  closeSettingsModal();
+  showToast(`${name}의 권한이 ${label}으로 변경되었습니다.`, 'success');
+}
+function resetMemberPw(name, email) {
+  if (!confirm(`${name}(${email})의 비밀번호를 초기화하시겠습니까?`)) return;
+  closeSettingsModal();
+  showToast(`${email}로 임시 비밀번호가 발송되었습니다.`, 'success');
+}
+function removeMember(name) {
+  if (!confirm(`"${name}" 계정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+  closeSettingsModal();
+  showToast(`${name} 계정이 삭제되었습니다.`, '');
+}
+
+/* ── 시스템 초기화 ── */
+function confirmSystemReset() {
+  if (!confirm('모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  const code = prompt('확인을 위해 "RESET"을 정확히 입력하세요:');
+  if (code !== 'RESET') { showToast('초기화가 취소되었습니다.', ''); return; }
+  try { sessionStorage.clear(); } catch(e) {}
+  showToast('시스템이 초기화되었습니다.', 'success');
+  setTimeout(() => location.href = '../index.html', 2000);
+}
