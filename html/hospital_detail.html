@@ -71,7 +71,7 @@
         <div class="card">
           <div class="card-head">
             <div class="card-title">🏥 병원 기본 정보</div>
-            <button class="btn" style="font-size:12px;padding:4px 10px" onclick="alert('정보 편집')">편집</button>
+            <button class="btn" style="font-size:12px;padding:4px 10px" onclick="editHospitalInfo()">편집</button>
           </div>
           <div id="basic-info"></div>
         </div>
@@ -112,7 +112,7 @@
         <div class="card">
           <div class="card-head">
             <div class="card-title">🌐 사이트 현황</div>
-            <button class="btn btn-primary" style="font-size:12px;padding:4px 10px" onclick="alert('사이트 관리 페이지 이동')">관리 →</button>
+            <button class="btn btn-primary" style="font-size:12px;padding:4px 10px" onclick="location.href='site_management.html'">관리 →</button>
           </div>
           <div id="site-info"></div>
         </div>
@@ -145,7 +145,7 @@
         <div class="card">
           <div class="card-head">
             <div class="card-title">📄 계약 정보</div>
-            <button class="btn" style="font-size:12px;padding:4px 10px" onclick="alert('계약 수정')">수정</button>
+            <button class="btn" style="font-size:12px;padding:4px 10px" id="contract-edit-btn" onclick="openContractEdit()">수정</button>
           </div>
           <div id="contract-info"></div>
         </div>
@@ -257,12 +257,12 @@ function renderHero() {
     </div>
     <div style="display:flex;gap:8px">
       <a class="btn" href="onboarding_detail.html?id=${H.id}">🚀 온보딩</a>
-      <button class="btn btn-primary" onclick="alert('${H.name} 사이트 열기')">🌐 사이트 열기</button>
+      <button class="btn btn-primary" onclick="openSite()">🌐 사이트 열기</button>
     </div>`;
 
   document.getElementById('tb-actions').innerHTML = `
-    <button class="btn btn-danger" onclick="alert('일시정지 처리')">⏸ 일시정지</button>
-    <button class="btn" onclick="alert('설정 편집')">⚙ 설정</button>`;
+    <button class="btn btn-danger" id="pause-btn" onclick="togglePause()">${H.status === 'paused' ? '▶ 재개' : '⏸ 일시정지'}</button>
+    <button class="btn" onclick="location.href='settings.html'">⚙ 설정</button>`;
 }
 
 // ── 개요 탭 ──
@@ -296,7 +296,7 @@ function renderOverview() {
     {lb:'🚀 온보딩 이어서 진행', href:`onboarding_detail.html?id=${H.id}`, cls:''},
     {lb:'💬 문의·CRM 보기', href:'crm_management.html', cls:''},
     {lb:'📊 리포트 생성', href:'reports.html', cls:'btn-navy'},
-    {lb:'📄 계약서 다운로드', href:'#', cls:'', click:"alert('계약서 PDF 다운로드')"},
+    {lb:'📄 계약서 다운로드', href:'#', cls:'', click:"printContract()"},
   ].map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''}>${a.lb}</a>`).join('');
 }
 
@@ -336,7 +336,7 @@ function renderOnboarding() {
 
   document.getElementById('ob-buttons').innerHTML = isDone
     ? '<span style="font-size:12px;color:var(--gray-400)">✓ 온보딩이 완료되었습니다</span>'
-    : `<button class="btn" onclick="alert('이전 단계로')">← 이전</button>
+    : `<button class="btn" onclick="location.href='onboarding_detail.html?id=${H.id}'">← 온보딩으로</button>
        <a class="btn btn-primary" href="onboarding_detail.html?id=${H.id}">이어서 진행 →</a>`;
 
   document.getElementById('ob-assets').innerHTML = [
@@ -355,7 +355,7 @@ function renderOnboarding() {
 // ── 사이트 탭 ──
 function renderSite() {
   document.getElementById('site-info').innerHTML = [
-    ['사이트 URL', `<a style="color:var(--teal);font-family:monospace" href="#" onclick="alert('사이트 열기')">${H.url}</a>`],
+    ['사이트 URL', `<a style="color:var(--teal);font-family:monospace;cursor:pointer" onclick="openSite()">${H.url}</a>`],
     ['게시 상태', H.status === 'active' ? '<span class="badge badge-green">게시 중</span>' : '<span class="badge badge-amber">준비 중</span>'],
     ['마지막 업데이트', H.status === 'active' ? '2026-05-21 14:23' : '—'],
     ['도메인', H.url],
@@ -375,7 +375,7 @@ function renderSite() {
     : compItems.map(c=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--${c.sev}-l);border-radius:var(--r);margin-bottom:8px">
         <span style="font-size:16px">${c.sev==='red'?'🚨':'⚠️'}</span>
         <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--gray-900)">${c.msg}</div></div>
-        <button class="btn btn-danger" style="font-size:12px;padding:3px 8px" onclick="alert('위반 처리')">처리</button>
+        <button class="btn btn-danger" style="font-size:12px;padding:3px 8px" onclick="handleCompliance(this)">처리</button>
       </div>`).join('');
 
   document.getElementById('cwv-metrics').innerHTML = [
@@ -413,7 +413,7 @@ function renderCrm() {
     <td style="font-size:12px;color:var(--gray-500);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.msg}</td>
     <td style="font-size:12px;color:var(--gray-400)">${q.time}</td>
     <td><span class="badge ${q.status==='미확인'?'badge-red':q.status==='상담중'?'badge-amber':'badge-gray'}">${q.status}</span></td>
-    <td><button class="btn" style="font-size:12px;padding:3px 8px" onclick="alert('답변하기')">답변</button></td>
+    <td><button class="btn" style="font-size:12px;padding:3px 8px" onclick="toggleReply(this,'${q.name}')">답변</button></td>
   </tr>`).join('');
 }
 
@@ -477,6 +477,170 @@ function addMemo() {
   memos.unshift({author: user, date: '지금', text: txt});
   document.getElementById('new-memo').value = '';
   renderMemo();
+}
+
+// ── 헬퍼: 토스트 ──
+function showToast(msg, type) {
+  const e = document.getElementById('__toast');
+  if (e) e.remove();
+  const bg = type === 'success' ? '#059669' : type === 'error' ? '#DC2626' : '#0F1E3C';
+  const t = document.createElement('div');
+  t.id = '__toast';
+  t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2500);
+}
+
+// ── 사이트 열기 ──
+function openSite() {
+  const url = H.url && H.url !== '(온보딩 중)' ? 'https://' + H.url : null;
+  if (!url) { showToast('아직 사이트가 게시되지 않았습니다.', 'error'); return; }
+  window.open(url, '_blank');
+}
+
+// ── 일시정지 / 재개 ──
+function togglePause() {
+  const isPaused = H.status === 'paused';
+  const msg = isPaused
+    ? `${H.name}의 일시정지를 해제하시겠습니까?`
+    : `${H.name}을 일시정지 처리하시겠습니까?\n일시정지 중에는 사이트가 비공개 처리됩니다.`;
+  if (!confirm(msg)) return;
+  H.status = isPaused ? 'active' : 'paused';
+  renderHero();
+  showToast(isPaused ? '일시정지가 해제되었습니다.' : `${H.name}이 일시정지 처리되었습니다.`, isPaused ? 'success' : '');
+}
+
+// ── 병원 정보 편집 ──
+function editHospitalInfo() {
+  try { sessionStorage.setItem('ippeo_edit_hospital', JSON.stringify(H)); } catch(e) {}
+  location.href = 'hospital_new.html?edit=' + H.id;
+}
+
+// ── 컴플라이언스 처리 ──
+function handleCompliance(btn) {
+  if (!confirm('이 위반 항목을 처리 완료로 표시하시겠습니까?')) return;
+  const item = btn.closest('div[style*="background:var(--red-l)"]') || btn.closest('div[style*="background:var(--amber-l)"]') || btn.parentElement;
+  item.style.opacity = '0';
+  item.style.transition = 'opacity .3s';
+  setTimeout(() => {
+    item.remove();
+    H.compliance = Math.max(0, H.compliance - 1);
+    const list = document.getElementById('compliance-list');
+    if (list && !list.querySelector('button')) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">✓ 컴플라이언스 위반 없음</div>';
+    }
+  }, 300);
+  showToast('위반 항목이 처리되었습니다.', 'success');
+}
+
+// ── CRM 인라인 답변 ──
+function toggleReply(btn, name) {
+  const tr = btn.closest('tr');
+  const next = tr.nextElementSibling;
+  if (next && next.classList.contains('reply-row')) {
+    next.remove(); btn.textContent = '답변'; return;
+  }
+  const replyTr = document.createElement('tr');
+  replyTr.className = 'reply-row';
+  replyTr.innerHTML = `<td colspan="6" style="padding:8px 12px;background:var(--gray-50);border-bottom:1px solid var(--gray-100)">
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <textarea rows="2" placeholder="${name}에게 답변을 입력하세요..." style="flex:1;font-size:12px;padding:8px;border:1px solid var(--gray-200);border-radius:6px;resize:none;font-family:inherit;line-height:1.5;outline:none"></textarea>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-primary" style="font-size:12px;white-space:nowrap" onclick="sendReply(this,'${name}')">📤 발송</button>
+        <button class="btn" style="font-size:12px" onclick="this.closest('.reply-row').remove()">취소</button>
+      </div>
+    </div>
+  </td>`;
+  tr.after(replyTr);
+  btn.textContent = '닫기';
+  replyTr.querySelector('textarea').focus();
+}
+function sendReply(btn, name) {
+  const txt = btn.closest('td').querySelector('textarea').value.trim();
+  if (!txt) { showToast('답변 내용을 입력하세요.', 'error'); return; }
+  const replyRow = btn.closest('.reply-row');
+  const prevTr = replyRow.previousElementSibling;
+  if (prevTr) {
+    const replyBtn = prevTr.querySelector('button');
+    if (replyBtn) replyBtn.textContent = '답변';
+    // 상태 배지 업데이트
+    const badge = prevTr.querySelector('.badge-red');
+    if (badge) { badge.textContent = '완료'; badge.className = 'badge badge-gray'; }
+    const ambBadge = prevTr.querySelector('.badge-amber');
+    if (ambBadge) { ambBadge.textContent = '완료'; ambBadge.className = 'badge badge-gray'; }
+  }
+  replyRow.remove();
+  showToast(`${name}에게 답변이 발송되었습니다.`, 'success');
+}
+
+// ── 계약 수정 모달 ──
+function openContractEdit() {
+  const planPrices = {Basic:'₩390,000', Pro:'₩890,000', Enterprise:'₩1,490,000'};
+  const m = document.createElement('div');
+  m.id = '__contract-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center';
+  m.innerHTML = `<div style="background:#fff;border-radius:16px;padding:28px 32px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="font-size:16px;font-weight:700;color:#0D1B3E;margin-bottom:20px">📄 계약 정보 수정</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px">플랜</div>
+      <select id="ce-plan" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit">
+        ${['Basic','Pro','Enterprise'].map(p=>`<option ${H.plan===p?'selected':''}>${p} — ${planPrices[p]}/월</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px">계약 만료일</div>
+      <input type="date" id="ce-expire" value="${H.expire && H.expire !== '-' ? H.expire : ''}" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px">결제 방법</div>
+      <select id="ce-pay" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit">
+        <option selected>자동이체 (신한은행)</option>
+        <option>자동이체 (국민은행)</option>
+        <option>카드 결제</option>
+        <option>세금계산서</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="document.getElementById('__contract-modal').remove()">취소</button>
+      <button class="btn btn-primary" onclick="saveContractEdit()">저장</button>
+    </div>
+  </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+function saveContractEdit() {
+  const planVal = document.getElementById('ce-plan').value.split(' ')[0];
+  const expireVal = document.getElementById('ce-expire').value;
+  H.plan = planVal;
+  if (expireVal) H.expire = expireVal;
+  document.getElementById('__contract-modal').remove();
+  renderContract();
+  renderHero();
+  showToast('계약 정보가 수정되었습니다.', 'success');
+}
+
+// ── 계약서 출력 ──
+function printContract() {
+  const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>계약서 — ${H.name}</title>
+  <style>body{font-family:sans-serif;padding:40px;color:#111;}h1{font-size:20px;margin-bottom:24px;}table{width:100%;border-collapse:collapse;}td{padding:10px 14px;border-bottom:1px solid #eee;font-size:14px;}td:first-child{color:#666;width:160px;}</style>
+  </head><body>
+  <h1>📄 MEDIFLOW 서비스 계약서</h1>
+  <table>
+    <tr><td>병원명</td><td>${H.name} (${H.nameJa})</td></tr>
+    <tr><td>구독 플랜</td><td>${H.plan} — ₩${planPrices[H.plan].toLocaleString()}/월</td></tr>
+    <tr><td>계약 시작</td><td>${H.startDate}</td></tr>
+    <tr><td>계약 만료</td><td>${H.expire && H.expire !== '-' ? H.expire : '온보딩 후 자동 설정'}</td></tr>
+    <tr><td>자동 갱신</td><td>설정됨</td></tr>
+    <tr><td>결제 방법</td><td>자동이체 (신한은행)</td></tr>
+    <tr><td>담당 매니저</td><td>${H.manager}</td></tr>
+  </table>
+  <p style="margin-top:40px;font-size:12px;color:#999">발행일: ${new Date().toLocaleDateString('ko-KR')} | MEDIFLOW 글로벌 메디컬 플로우</p>
+  <script>window.onload=()=>window.print()<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 // ── 초기 렌더 ──
