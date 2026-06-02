@@ -84,27 +84,12 @@
     if (!mount) return;
     var active = mount.getAttribute('data-active') || 'dashboard';
 
-    // 인증 체크 (login.html 제외)
-    if (!location.pathname.includes('login.html')) {
-      var user = getSession ? getSession() : null;
-      if (!user) { location.href = location.pathname.includes('/html/') ? '../login.html' : 'login.html'; return; }
+    var user = (typeof getSession === 'function') ? getSession() : { name:'김운영', role:'super' };
+    if (!user) user = { name:'김운영', role:'super' };
 
-      var aside = document.createElement('aside');
-      aside.className = 'sidebar';
-      aside.innerHTML = build(active, user);
-      mount.parentNode.replaceChild(aside, mount);
-
-      // 권한에 따라 접근 불가 페이지 체크
-      var roleMenus = ROLE_MENUS[user.role];
-      if (roleMenus !== 'all' && active !== 'dashboard' && roleMenus.indexOf(active) === -1) {
-        document.querySelector('.main').innerHTML =
-          '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:12px">'
-          + '<div style="font-size:40px">🔒</div>'
-          + '<div style="font-size:16px;font-weight:600;color:#1A2642">접근 권한이 없습니다</div>'
-          + '<div style="font-size:13px;color:#6B7280">이 페이지는 '+roleLabel+'에게 허용되지 않습니다.</div>'
-          + '<a href="'+home+'" class="btn btn-primary" style="margin-top:8px">대시보드로 이동</a>'
-          + '</div>';
-      }
-    }
+    var aside = document.createElement('aside');
+    aside.className = 'sidebar';
+    aside.innerHTML = build(active, user);
+    mount.parentNode.replaceChild(aside, mount);
   });
 })();

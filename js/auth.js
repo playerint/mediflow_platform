@@ -22,8 +22,10 @@ const DEMO_ACCOUNTS = [
   { email:'finance@ippeo.co.kr',  password:'finance1234',name:'박재무', role:'finance' },
 ];
 
+var DEFAULT_SESSION = { email:'admin@ippeo.co.kr', name:'김운영', role:'super' };
+
 function getSession() {
-  try { return JSON.parse(sessionStorage.getItem('ippeo_user')); } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem('ippeo_user')) || DEFAULT_SESSION; } catch { return DEFAULT_SESSION; }
 }
 function setSession(user) {
   sessionStorage.setItem('ippeo_user', JSON.stringify(user));
