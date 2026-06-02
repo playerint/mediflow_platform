@@ -377,8 +377,18 @@ var OB_STEPS = [
 /* ── Gemini ── */
 var GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + (typeof GEMINI_API_KEY !== 'undefined' ? GEMINI_API_KEY : '');
 
+// sessionStorage에 저장된 신규 등록 병원 병합
+(function() {
+  try {
+    var added = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
+    added.forEach(function(h) {
+      if (!HOSPITALS.filter(function(x){ return x.id === h.id; }).length) HOSPITALS.push(h);
+    });
+  } catch(e) {}
+})();
+
 var p       = new URLSearchParams(location.search);
-var hospId  = parseInt(p.get('id')) || 1;
+var hospId  = Number(p.get('id')) || 1;
 var H       = HOSPITALS.filter(function(h){ return h.id === hospId; })[0] || HOSPITALS[0];
 var curStep = H.obStep;
 var viewStep= Math.min(curStep, 9);

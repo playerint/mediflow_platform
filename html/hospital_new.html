@@ -380,7 +380,7 @@ function renderSuccess() {
           ${['AI 분석 시작 (약 2분 소요)','담당자 알림 발송 완료','온보딩 STEP 1 준비 완료'].map(t=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-700)"><span style="color:var(--teal)">✓</span>${t}</div>`).join('')}
         </div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-          <a class="btn btn-primary" href="onboarding_detail.html?id=new">🚀 온보딩 바로 시작</a>
+          <a class="btn btn-primary" href="onboarding_detail.html?id=${formData._newHospId}">🚀 온보딩 바로 시작</a>
           <a class="btn" href="hospital_list.html">병원 목록으로</a>
           <button class="btn" onclick="resetForm()">+ 다른 병원 등록</button>
         </div>
@@ -791,6 +791,7 @@ function submitHospital() {
     };
     existing.push(newHosp);
     sessionStorage.setItem('ippeo_new_hospitals', JSON.stringify(existing));
+    formData._newHospId = newHosp.id;
 
     // 등록 완료 시 해당 임시저장 항목 삭제
     const _urlDraftId = Number(new URLSearchParams(location.search).get('draft'));
