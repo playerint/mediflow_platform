@@ -1,0 +1,1089 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>온보딩 진행 — ippeo Admin</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+/* ════════════════════════════════════════
+   레이아웃
+════════════════════════════════════════ */
+.ob-layout { display:flex; height:calc(100vh - 56px); overflow:hidden; }
+
+/* ════════════════════════════════════════
+   좌측 스텝 네비
+════════════════════════════════════════ */
+.ob-nav {
+  width:200px; flex-shrink:0;
+  border-right:1px solid var(--s200);
+  background:var(--s0);
+  display:flex; flex-direction:column;
+  overflow-y:auto;
+}
+.ob-nav-hd {
+  padding:18px 16px 10px;
+  font-size:9px; font-weight:700;
+  color:var(--s400); text-transform:uppercase; letter-spacing:1px;
+}
+.ob-step {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 16px;
+  cursor:pointer; transition:background .1s;
+  border-left:2px solid transparent;
+  position:relative;
+}
+.ob-step:hover { background:var(--s50); }
+.ob-step.active {
+  background:var(--navy-l);
+  border-left-color:var(--navy);
+}
+.ob-num {
+  width:20px; height:20px; border-radius:50%;
+  font-size:10px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:all .15s;
+  border:1.5px solid var(--s300);
+  background:var(--s0); color:var(--s400);
+}
+.ob-num.done   { background:var(--s200); border-color:var(--s300); color:var(--s500); font-size:9px; }
+.ob-num.active { background:var(--navy); border-color:var(--navy); color:#fff; }
+.ob-num.wait   { background:var(--s0); border-color:var(--s200); color:var(--s300); }
+.ob-step-info { min-width:0; }
+.ob-step-name {
+  font-size:12px; font-weight:600;
+  color:var(--s700); line-height:1.3;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ob-step.active .ob-step-name { color:var(--navy); font-weight:700; }
+.ob-step.done .ob-step-name   { color:var(--s400); font-weight:500; }
+.ob-step-sub {
+  font-size:10px; color:var(--s400); margin-top:1px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ob-nav-foot {
+  margin-top:auto; padding:16px;
+  border-top:1px solid var(--s100);
+}
+.ob-nav-foot-lbl { font-size:9px; font-weight:600; color:var(--s400); text-transform:uppercase; letter-spacing:.6px; }
+.ob-nav-foot-val { font-size:17px; font-weight:800; color:var(--s900); margin:4px 0 2px; letter-spacing:-.3px; }
+.ob-nav-foot-sub { font-size:10px; color:var(--s400); line-height:1.55; }
+
+/* ════════════════════════════════════════
+   우측 콘텐츠
+════════════════════════════════════════ */
+.ob-content {
+  flex:1; overflow-y:auto;
+  padding:0;
+  background:var(--s50);
+}
+.ob-inner {
+  max-width:none;
+  padding:28px 40px 56px;
+}
+.ob-tag   { font-size:10px; font-weight:700; color:var(--blue); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+.ob-title { font-size:20px; font-weight:800; color:var(--s900); margin-bottom:6px; line-height:1.3; letter-spacing:-.3px; }
+.ob-desc  { font-size:13px; color:var(--s500); margin-bottom:20px; line-height:1.7; }
+.ob-foot  {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:28px; padding-top:16px;
+  border-top:1px solid var(--s200);
+}
+
+/* ════════════════════════════════════════
+   카드 / 박스
+════════════════════════════════════════ */
+.ob-card {
+  background:var(--s0);
+  border:1px solid var(--s200);
+  border-radius:var(--rl);
+  margin-bottom:14px;
+}
+.ob-card-head {
+  padding:14px 18px 12px;
+  border-bottom:1px solid var(--s100);
+  font-size:12px; font-weight:700; color:var(--s900);
+}
+.ob-card-body { padding:16px 18px; }
+
+.ob-box {
+  background:var(--s0); border:1px solid var(--s200);
+  border-radius:var(--rl); padding:14px 18px; margin-bottom:14px;
+}
+.ob-section-lbl {
+  font-size:10px; font-weight:700; color:var(--s400);
+  text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px;
+}
+
+/* 키워드 칩 */
+.ob-kw-chip {
+  display:inline-block; font-size:12px; padding:3px 9px;
+  border-radius:4px; background:var(--s100); color:var(--s700);
+  margin:2px 3px 2px 0; font-weight:500; border:1px solid var(--s200);
+}
+
+/* ════════════════════════════════════════
+   체크리스트
+════════════════════════════════════════ */
+.ob-check-item {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 0; font-size:12px; color:var(--s700);
+}
+.ob-check-icon { color:var(--green); font-size:13px; font-weight:700; flex-shrink:0; }
+
+/* ════════════════════════════════════════
+   스탯 그리드
+════════════════════════════════════════ */
+.ob-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+.ob-stat {
+  text-align:center; padding:14px 8px;
+  background:var(--s0); border:1px solid var(--s200); border-radius:var(--rl);
+}
+.ob-stat-val { font-size:22px; font-weight:800; color:var(--s900); margin-bottom:3px; letter-spacing:-.5px; line-height:1; }
+.ob-stat-lbl { font-size:10px; color:var(--s500); }
+
+/* ════════════════════════════════════════
+   전략 그리드
+════════════════════════════════════════ */
+.ob-strategy-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.ob-strategy-box {
+  background:var(--s50); border:1px solid var(--s200);
+  border-radius:var(--r); padding:11px 13px;
+}
+.ob-strategy-box-title { font-size:12px; font-weight:600; color:var(--s900); margin-bottom:3px; }
+.ob-strategy-box-desc  { font-size:12px; color:var(--s500); line-height:1.5; }
+
+/* ════════════════════════════════════════
+   템플릿 카드
+════════════════════════════════════════ */
+.tmpl-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+.tmpl-card {
+  border:1.5px solid var(--s200); border-radius:10px;
+  overflow:hidden; cursor:pointer; transition:all .15s;
+  position:relative; background:var(--s0);
+}
+.tmpl-card:hover { border-color:var(--s400); transform:translateY(-1px); }
+.tmpl-card.selected { border-color:var(--navy); border-width:2px; }
+.tmpl-preview { height:150px; display:flex; align-items:center; justify-content:center; }
+.tmpl-check {
+  position:absolute; top:7px; right:7px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--navy); color:#fff;
+  font-size:10px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.tmpl-body { padding:11px 13px 12px; }
+.tmpl-name { font-size:12px; font-weight:700; color:var(--s900); margin-bottom:2px; }
+.tmpl-desc { font-size:10px; color:var(--s500); margin-bottom:7px; }
+.tmpl-tag  {
+  display:inline-block; font-size:9px; padding:1px 6px;
+  border-radius:3px; background:var(--s100); color:var(--s500);
+  margin:2px 2px 0 0;
+}
+
+/* 사진 업로드 CSS → asset-grid 로 대체됨 */
+
+/* ════════════════════════════════════════
+   카피 검수 테이블
+════════════════════════════════════════ */
+.copy-table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+.copy-table th {
+  font-size:9px; font-weight:700; color:var(--s400);
+  text-transform:uppercase; padding:8px 12px;
+  border-bottom:1px solid var(--s200); text-align:left;
+  white-space:nowrap; letter-spacing:.5px; background:var(--s50);
+}
+.copy-table td {
+  font-size:12px; color:var(--s700);
+  padding:9px 12px; border-bottom:1px solid var(--s100);
+  vertical-align:top; line-height:1.5;
+}
+.copy-table tr:last-child td { border-bottom:none; }
+.copy-table tr:hover td { background:var(--s50); }
+.badge-ok  { background:var(--s100); color:var(--s700); font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; white-space:nowrap; display:inline-block; }
+.badge-fix { background:var(--red-l); color:var(--red);  font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; white-space:nowrap; display:inline-block; }
+.badge-ai  { background:var(--navy-l); color:var(--navy); font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; white-space:nowrap; display:inline-block; }
+
+/* ════════════════════════════════════════
+   통계 바 (Step5)
+════════════════════════════════════════ */
+.stat-bar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.stat-bar-item { text-align:center; padding:12px; border-radius:var(--rl); border:1px solid var(--s200); background:var(--s0); }
+.stat-bar-val { font-size:18px; font-weight:800; margin-bottom:2px; letter-spacing:-.3px; }
+.stat-bar-lbl { font-size:10px; color:var(--s400); }
+
+/* ════════════════════════════════════════
+   광고법 체크
+════════════════════════════════════════ */
+.law-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--s100); }
+.law-item:last-child { border-bottom:none; }
+.law-chk { color:var(--green); font-size:13px; flex-shrink:0; }
+.law-body { flex:1; }
+.law-title { font-size:12px; font-weight:500; color:var(--s900); }
+.law-ex    { font-size:10px; color:var(--s400); margin-top:1px; }
+.law-badge { font-size:10px; font-weight:600; color:var(--s400); flex-shrink:0; }
+
+/* ════════════════════════════════════════
+   토글 스위치
+════════════════════════════════════════ */
+.toggle-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--s100); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-sw {
+  width:34px; height:19px; border-radius:10px;
+  flex-shrink:0; cursor:pointer;
+  position:relative; transition:background .15s;
+}
+.toggle-sw.on  { background:var(--navy); }
+.toggle-sw.off { background:var(--s300); }
+.toggle-sw::after {
+  content:''; position:absolute; top:2.5px;
+  width:14px; height:14px; border-radius:50%;
+  background:#fff; transition:left .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-sw.on::after  { left:17px; }
+.toggle-sw.off::after { left:2.5px; }
+.toggle-info { flex:1; min-width:0; }
+.toggle-title { font-size:12px; font-weight:600; color:var(--s900); }
+.toggle-sub   { font-size:10px; color:var(--s400); margin-top:1px; }
+.toggle-state { font-size:10px; color:var(--s400); flex-shrink:0; }
+
+/* ════════════════════════════════════════
+   SEO 점수 카드
+════════════════════════════════════════ */
+.score-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.score-card { border-radius:var(--rl); padding:18px 20px; color:#fff; }
+.score-num { font-size:38px; font-weight:800; line-height:1; letter-spacing:-1.5px; }
+.score-unit { font-size:14px; font-weight:500; opacity:.6; }
+.score-items { margin-top:12px; font-size:10px; opacity:.8; line-height:2; }
+
+/* ════════════════════════════════════════
+   도구 토글 리스트
+════════════════════════════════════════ */
+.tool-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--s100); }
+.tool-row:last-child { border-bottom:none; }
+.tool-lbl { font-size:12px; color:var(--s700); }
+
+/* ════════════════════════════════════════
+   Step5 폰 미리보기
+════════════════════════════════════════ */
+.preview-wrap { display:grid; grid-template-columns:280px 1fr; gap:24px; margin-bottom:20px; align-items:start; }
+.phone-frame  { background:var(--s900); border-radius:22px; padding:5px; }
+.phone-screen { background:#fff; border-radius:17px; overflow:hidden; }
+.phone-topbar { background:var(--navy); padding:9px 12px; display:flex; align-items:center; justify-content:space-between; }
+.phone-hero   { background:linear-gradient(135deg,#FFF0F5,#FFE4EC); padding:18px 14px 14px; position:relative; overflow:hidden; }
+.phone-menu   { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin:10px 12px 12px; }
+.phone-menu-item { background:var(--s50); border-radius:5px; padding:7px 3px; text-align:center; font-size:9px; color:var(--s700); }
+
+/* ════════════════════════════════════════
+   게시 카드
+════════════════════════════════════════ */
+.publish-card { background:var(--s0); border:1px solid var(--s200); border-radius:var(--rl); padding:18px; }
+.publish-check-item { display:flex; align-items:center; gap:7px; padding:4px 0; font-size:12px; color:var(--s700); }
+.publish-check-icon { color:var(--green); font-size:12px; font-weight:700; flex-shrink:0; }
+
+/* ════════════════════════════════════════
+   스피너
+════════════════════════════════════════ */
+@keyframes ob-spin { to { transform:rotate(360deg); } }
+.ob-spinner { display:inline-block; width:13px; height:13px; border:2px solid var(--navy); border-top-color:transparent; border-radius:50%; animation:ob-spin .7s linear infinite; flex-shrink:0; }
+
+/* ════════════════════════════════════════
+   자산 그리드 (Step 2)
+════════════════════════════════════════ */
+.asset-upload-zone { border:2px dashed var(--s300); border-radius:var(--rl); padding:24px; text-align:center; background:var(--s0); margin-bottom:20px; cursor:pointer; transition:all .2s; }
+.asset-upload-zone:hover { border-color:var(--navy); background:var(--navy-l); }
+.asset-cat { margin-bottom:24px; }
+.asset-cat-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.asset-cat-title { font-size:14px; font-weight:600; color:var(--navy); display:flex; align-items:center; gap:8px; }
+.asset-cat-count { font-size:12px; color:var(--s400); font-weight:400; }
+.asset-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.asset-card { background:var(--s0); border:1px solid var(--s200); border-radius:var(--r); overflow:hidden; position:relative; cursor:pointer; transition:all .2s; }
+.asset-card:hover { border-color:var(--s400); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.asset-card.selected { border:2px solid var(--navy); box-shadow:0 0 0 3px rgba(15,30,62,.08); }
+.asset-thumb { width:100%; height:100px; display:flex; align-items:center; justify-content:center; font-size:28px; background:var(--s100); }
+.asset-meta { padding:8px 10px; }
+.asset-name { font-size:12px; color:var(--s700); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.asset-sz { font-size:10px; color:var(--s400); }
+.asset-actions { position:absolute; top:6px; right:6px; display:flex; gap:4px; opacity:0; transition:opacity .15s; }
+.asset-card:hover .asset-actions { opacity:1; }
+.asset-btn { width:24px; height:24px; border-radius:6px; background:rgba(0,0,0,.5); color:#fff; border:none; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; }
+.asset-btn:hover { background:rgba(0,0,0,.7); }
+.asset-badge-ba { position:absolute; top:6px; left:6px; font-size:9px; padding:2px 6px; border-radius:5px; font-weight:600; background:#EDE9FE; color:#4C1D95; }
+.asset-add { background:var(--s0); border:1.5px dashed var(--s300); border-radius:var(--r); height:140px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; gap:6px; color:var(--s400); font-size:12px; }
+.asset-add:hover { border-color:var(--navy); color:var(--navy); }
+</style>
+</head>
+<body>
+<div id="sidebar-mount" data-active="onboarding"></div>
+<main class="main">
+
+  <!-- 탑바 -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="onboarding_list.html">← 홈</a>
+      <span class="topbar-sep">|</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy)" id="tb-name"></div>
+        <div style="font-size:12px;color:var(--s400)" id="tb-sub"></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" onclick="showToast('임시 저장되었습니다.','success')">임시 저장</button>
+      <button class="btn" onclick="showToast('미리보기 준비 중...','')">미리보기</button>
+      <button class="btn btn-navy" onclick="showToast('게시 준비 중...','')">게시하기</button>
+    </div>
+  </div>
+
+  <div class="ob-layout">
+    <!-- 좌측 스텝 리스트 -->
+    <div class="ob-nav">
+      <div class="ob-nav-hd">진행 단계</div>
+      <div id="ob-nav-list"></div>
+      <div class="ob-nav-foot">
+        <div class="ob-nav-foot-lbl">예상 소요</div>
+        <div class="ob-nav-foot-val">2~3시간</div>
+        <div class="ob-nav-foot-sub">AI 자동 생성 5분<br>+ 운영자 검토 1시간</div>
+      </div>
+    </div>
+
+    <!-- 우측 콘텐츠 -->
+    <div class="ob-content" id="ob-content-wrap">
+      <div class="ob-inner" id="ob-content"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+/* ── 데이터 ── */
+var HOSPITALS = [
+  {id:1,  name:'올래성형외과',   nameJa:'オーレ整形外科',  url:'jp.oleps.co.kr',   specialty:'종합 성형',    obStep:5},
+  {id:10, name:'이수프리마',     nameJa:'イスプリマ',      url:'jp.isuprima.kr',   specialty:'눈·코 복합',   obStep:2},
+  {id:11, name:'사당뷰성형외과', nameJa:'サダンビュー',    url:'jp.sadangview.kr', specialty:'안면윤곽·피부', obStep:3},
+  {id:12, name:'방배탑성형외과', nameJa:'バンベタップ',    url:'jp.banbaetop.kr',  specialty:'쌍꺼풀 전문',  obStep:4},
+];
+
+var OB_STEPS = [
+  {name:'AI 풀 드래프트', sub:'전략·카피·SEO 동시 생성'},
+  {name:'크리에이티브',   sub:'템플릿·사진 확정'},
+  {name:'검수 게이트',    sub:'컴플라이언스·카피 통합'},
+  {name:'연동 & SEO',     sub:'LINE·CRM·AEO 원스텝'},
+  {name:'게시',           sub:'1클릭 배포'},
+];
+
+/* ── Gemini ── */
+var GEMINI_API_KEY = window.GEMINI_KEY || '';  // 환경변수 또는 config.js에서 주입
+var GEMINI_URL     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY;
+
+var p       = new URLSearchParams(location.search);
+var hospId  = parseInt(p.get('id')) || 1;
+var H       = HOSPITALS.filter(function(h){ return h.id === hospId; })[0] || HOSPITALS[0];
+var curStep = H.obStep;
+var viewStep= Math.min(curStep, 9);
+var analyzed= false;
+var tmpl    = 1;
+var siteUrl = '';        // 분석한 URL
+var analysisResult = null;  // Gemini 분석 결과
+var progItems = [];      // 진행 단계 상태 배열
+
+document.getElementById('tb-name').textContent = H.nameJa + ' (' + H.name + ')';
+document.getElementById('tb-sub').textContent  = H.url + ' · 진료과: ' + H.specialty;
+
+/* ── 네비 렌더 ── */
+function renderNav() {
+  document.getElementById('ob-nav-list').innerHTML = OB_STEPS.map(function(s, i) {
+    var n   = i + 1;
+    var state = n < curStep ? 'done' : n === viewStep ? 'active' : 'wait';
+    return '<div class="ob-step' + (n === viewStep ? ' active' : '') + '" onclick="goStep(' + n + ')">'
+      + '<div class="ob-num ' + state + '">' + (n < curStep ? '✓' : n) + '</div>'
+      + '<div><div class="ob-step-name">' + s.name + '</div>'
+      + '<div class="ob-step-sub">' + s.sub + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ── 이동 ── */
+function goStep(n) {
+  if (n > curStep + 1) return;
+  viewStep = n;
+  renderNav();
+  document.getElementById('ob-content').innerHTML = STEPS[n]();
+  document.getElementById('ob-content-wrap').scrollTop = 0;
+}
+
+function doneStep(n) {
+  if (n >= curStep) curStep = Math.min(n + 1, 5);
+  goStep(Math.min(n + 1, 5));
+}
+
+/* ── 분석 시작 (실제 크롤링 + Gemini) ── */
+async function startAnalysis() {
+  var urlEl = document.getElementById('url-inp');
+  var url   = urlEl ? urlEl.value.trim() : '';
+  if (!url) { showToast('URL을 입력해주세요.', 'error'); return; }
+  if (!url.startsWith('http')) url = 'https://' + url;
+  siteUrl = url;
+
+  /* 진행 단계 초기화 */
+  progItems = [
+    '한글 사이트 크롤링 중...',
+    '시술 카탈로그 추출',
+    '의료진 프로필 파싱',
+    '사진 자산 분류',
+    '일본 SEO 키워드 조사',
+    'IPPEO 5사 벤치마크 분석',
+    '일본어 카피 초안 생성',
+    '광고법 사전 스캔',
+    '전략 패키지 생성 완료',
+  ].map(function(t){ return {text:t, state:'wait'}; }); // state: wait|running|done|error
+
+  /* 진행 화면 렌더 */
+  var el = document.getElementById('ob-content');
+  el.innerHTML = renderStep1Analyzing(url);
+
+  function setItemState(i, state) {
+    progItems[i].state = state;
+    var list = document.getElementById('prog-list');
+    if (list) list.innerHTML = progItems.map(renderProgItem).join('');
+  }
+
+  function delay(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  /* ① CORS 프록시로 HTML 수집 */
+  var html = '';
+  setItemState(0, 'running');
+  try {
+    var res  = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+    var json = await res.json();
+    html = json.contents || '';
+    setItemState(0, 'done');
+  } catch(e) {
+    setItemState(0, 'error');
+  }
+
+  /* ② HTML 파싱 */
+  await delay(400);
+  setItemState(1, 'running');
+  var parsed = parseHospitalHtml(html);
+  await delay(350);
+  setItemState(1, 'done');
+
+  await delay(300);
+  setItemState(2, 'running');
+  await delay(350);
+  setItemState(2, 'done');
+
+  await delay(300);
+  setItemState(3, 'running');
+  await delay(350);
+  setItemState(3, 'done');
+
+  /* ③ Gemini 분석 */
+  setItemState(4, 'running');
+  try {
+    analysisResult = await geminiAnalyze(url, parsed);
+    setItemState(4, 'done');
+    await delay(250);
+    setItemState(5, 'done');
+    await delay(250);
+    setItemState(6, 'done');
+    await delay(250);
+    setItemState(7, 'done');
+    await delay(250);
+    setItemState(8, 'done');
+  } catch(e) {
+    /* Gemini 실패 시 파싱 결과 + 기본값으로 대체 */
+    analysisResult = buildFallback(parsed);
+    setItemState(4, 'error');
+    setItemState(5, 'done');
+    setItemState(6, 'done');
+    setItemState(7, 'done');
+    setItemState(8, 'done');
+    showToast('AI 분석 실패 — 기본 데이터로 대체됩니다.', 'error');
+  }
+
+  if (typeof analysisResult.recommendedTemplate === 'number') {
+    tmpl = analysisResult.recommendedTemplate;
+  }
+  await delay(600);
+  analyzed = true;
+  curStep  = Math.max(curStep, 1);
+  el.innerHTML = STEPS[1]();
+}
+
+/* ── HTML 파싱 ── */
+function parseHospitalHtml(html) {
+  if (!html) return {title:'', desc:'', headings:'', navItems:'', imgCount:0};
+  try {
+    var doc   = new DOMParser().parseFromString(html, 'text/html');
+    var title = doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : '';
+    var metaEl= doc.querySelector('meta[name="description"]');
+    var desc  = metaEl ? (metaEl.getAttribute('content') || '') : '';
+    var heads = Array.from(doc.querySelectorAll('h1,h2,h3,h4'))
+                  .map(function(h){ return h.textContent.trim(); })
+                  .filter(Boolean).slice(0,30).join(' | ');
+    var navs  = Array.from(doc.querySelectorAll('nav a,header a,.gnb a,.menu a,.lnb a'))
+                  .map(function(a){ return a.textContent.trim(); })
+                  .filter(Boolean).slice(0,20).join(', ');
+    var imgs  = doc.querySelectorAll('img').length;
+    return {title:title, desc:desc, headings:heads, navItems:navs, imgCount:imgs};
+  } catch(e) {
+    return {title:'', desc:'', headings:'', navItems:'', imgCount:0};
+  }
+}
+
+/* ── Gemini 분석 ── */
+function geminiAnalyze(url, parsed) {
+  var snippet = ((parsed.headings || '') + ' ' + (parsed.navItems || '')).substring(0, 1000);
+  var prompt  = '다음은 한국 성형외과 웹사이트 크롤링 결과입니다.\n'
+    + 'URL: ' + url + '\n'
+    + '제목: ' + (parsed.title || '(없음)') + '\n'
+    + '설명: ' + (parsed.desc  || '(없음)') + '\n'
+    + '메뉴/헤딩: ' + (snippet || '(없음)') + '\n\n'
+    + '이 병원의 일본 시장 진출 분석을 JSON으로만 반환하세요 (코드블록 없이):\n'
+    + '{"procedures":["시술1","시술2","시술3"],'
+    + '"doctorCount":5,'
+    + '"baPhotoCount":87,'
+    + '"facilityPhotoCount":10,'
+    + '"keywords":["日本語 키워드1","키워드2","키워드3"],'
+    + '"positioning":"포지셔닝 진단 2~3문장",'
+    + '"coreMessage":"핵심 일본어 카피",'
+    + '"recommendedTemplate":0,'                           // 0=감성브랜드형 1=프리미엄형 2=컨버전형
+    + '"heroCopy":"일본어 hero 카피 1~2문장",'             // 실제 사용 가능한 일본어 카피
+    + '"complianceIssues":[],'                             // [{text:"위반표현",level:"block|gray"}]
+    + '"strategies":[{"title":"전략1","desc":"설명"},{"title":"전략2","desc":"설명"},{"title":"전략3","desc":"설명"},{"title":"전략4","desc":"설명"}]}';
+
+  return new Promise(function(resolve, reject) {
+    fetch(GEMINI_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{temperature:0.7, maxOutputTokens:2048}
+      })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var parts = d.candidates && d.candidates[0] && d.candidates[0].content
+        ? d.candidates[0].content.parts : [];
+      var tp = parts.filter(function(p){ return !p.thought && p.text; })[0] || parts[0];
+      var txt = tp ? tp.text.trim() : '';
+      var clean = txt.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+      resolve(JSON.parse(clean));
+    })
+    .catch(reject);
+  });
+}
+
+/* ── Gemini 실패 시 기본값 ── */
+function buildFallback(parsed) {
+  return {
+    procedures:['쌍꺼풀','눈매교정','코성형','안면윤곽','지방흡입','리프팅','피부관리'],
+    doctorCount: Math.max(1, Math.round((parsed.imgCount || 10) / 20)),
+    baPhotoCount: Math.min(99, Math.max(10, parsed.imgCount || 30)),
+    facilityPhotoCount: 10,
+    keywords:['韓国 整形','二重整形 韓国','ソウル 整形外科','韓国 鼻整形','整形 費用 韓国','韓国美容外科','日本語対応 整形','韓国 輪郭手術','ソウル 美容整形','韓国整形 おすすめ'],
+    positioning: (parsed.title || H.name) + '는 한국 성형외과로 일본 시장 진출을 준비 중입니다. 일본어 페이지 및 CTA 구축이 필요합니다.',
+    coreMessage:'あなたの理想の美しさへ',
+    recommendedTemplate: 0,
+    heroCopy:'「変わったね」ではなく「綺麗になったね」と言われる手術を。',
+    complianceIssues: [],
+    strategies:[
+      {title:'7개 분야 카테고리 분기', desc:'일본 환자 의사결정 분기점'},
+      {title:'의사 매칭 카드',         desc:'케이스 기반 의사 자동 팀플'},
+      {title:'4중 CTA — LINE 우선',    desc:'LINE + 예약폼 + 전화 타겟팅'},
+      {title:'D+3/7/14 팔로잉',        desc:'수술 후 자동 리타겟팅'},
+    ],
+  };
+}
+
+/* ── 진행 중 Step1 화면 ── */
+function renderStep1Analyzing(url) {
+  return '<div class="ob-tag">STEP 1 · AI 드래프트</div>'
+    + '<h2 class="ob-title">AI 풀 드래프트 생성 중...</h2>'
+    + '<p class="ob-desc">전략 · 카피 · SEO · 컴플라이언스를 동시에 분석합니다.</p>'
+    + '<div class="ob-box" style="margin-bottom:20px">'
+    + '<div style="font-size:12px;font-weight:600;color:var(--s500);margin-bottom:10px">한국 병원 홈페이지 주소</div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<input type="url" value="' + url + '" style="flex:1" readonly>'
+    + '<button class="btn" disabled style="opacity:.5">분석 중...</button>'
+    + '</div></div>'
+    + '<div id="prog-list">' + progItems.map(renderProgItem).join('') + '</div>';
+}
+
+/* ── 진행 항목 렌더 ── */
+function renderProgItem(item) {
+  var icon = item.state === 'done'    ? '<span style="color:var(--green);font-size:15px;font-weight:700;flex-shrink:0">✓</span>'
+           : item.state === 'error'   ? '<span style="color:var(--red);font-size:15px;flex-shrink:0">✗</span>'
+           : item.state === 'running' ? '<span class="ob-spinner"></span>'
+           : '<span style="width:14px;height:14px;flex-shrink:0;display:inline-block"></span>';
+  var color = item.state === 'wait' ? 'color:var(--s300)' : 'color:var(--s700)';
+  return '<div style="display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px;' + color + '">' + icon + item.text + '</div>';
+}
+
+/* ════════════════════════════════════════════════
+   스텝 콘텐츠 (5단계)
+════════════════════════════════════════════════ */
+var STEPS = {
+
+  /* STEP 1 — AI 풀 드래프트 */
+  1: function() {
+    if (!analyzed) {
+      return '<div class="ob-tag">STEP 1 · AI 드래프트</div>'
+        + '<h2 class="ob-title">URL 하나로 전부 만듭니다</h2>'
+        + '<p class="ob-desc">전략 · 템플릿 추천 · 일본어 카피 초안 · 컴플라이언스 사전스캔을 동시에 자동 생성합니다.</p>'
+        + '<div class="ob-box">'
+        + '<div style="font-size:12px;font-weight:600;color:var(--s500);margin-bottom:10px">한국 병원 홈페이지 주소</div>'
+        + '<div style="display:flex;gap:10px">'
+        + '<input type="url" id="url-inp" placeholder="https://www.oleps.co.kr/" style="flex:1">'
+        + '<button class="btn btn-navy" onclick="startAnalysis()">AI 분석 시작</button>'
+        + '</div></div>'
+        + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px">'
+        + ['전략 · 포지셔닝 자동 산출','템플릿 자동 추천','일본어 카피 초안 생성','광고법 사전 스캔','SEO 키워드 조사','IPPEO 벤치마크 분석'].map(function(t){
+            return '<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:var(--s50);border:1px solid var(--s100);border-radius:6px;font-size:12px;color:var(--s600)">'
+              + '<span style="color:var(--navy);font-weight:700;font-size:13px">◈</span>' + t + '</div>';
+          }).join('')
+        + '</div>'
+        + '<div class="ob-foot"><span></span>'
+        + '<button class="btn" disabled style="opacity:.4;cursor:default">다음 — 크리에이티브 확인 →</button>'
+        + '</div>';
+    }
+
+    var r = analysisResult || {};
+    var procCount = (r.procedures && r.procedures.length) || 14;
+    var docCount  = r.doctorCount  || 5;
+    var baCount   = r.baPhotoCount || 87;
+    var facCount  = r.facilityPhotoCount || 10;
+    var kws = (r.keywords && r.keywords.length) ? r.keywords.slice(0, 5) : ['韓国 整形','二重整形 韓国','ソウル 整形外科','韓国 鼻整形','整形 費用 韓国'];
+    var heroCopy  = r.heroCopy  || '「変わったね」ではなく「綺麗になったね」と言われる手術を。';
+    var recTmplNames = ['감성브랜드형','프리미엄형','컨버전형'];
+    var recTmpl  = (r.recommendedTemplate !== undefined && r.recommendedTemplate !== null) ? r.recommendedTemplate : 0;
+    var tmplBgs  = ['linear-gradient(135deg,#FFB6C1,#FF69B4)','linear-gradient(135deg,#0D1B3E,#1e2f5e)','linear-gradient(135deg,#7C3AED,#5B21B6)'];
+    var positioning = r.positioning || (H.name + '는 종합 성형 카테고리에 위치합니다.');
+
+    return '<div class="ob-tag">STEP 1 · AI 드래프트</div>'
+      + '<h2 class="ob-title">AI 드래프트 패키지 완성</h2>'
+      + '<p class="ob-desc">아래 결과를 확인하고 다음 단계에서 세부 조정합니다. 대부분 수정 없이 사용 가능합니다.</p>'
+
+      + '<div class="ob-box" style="margin-bottom:14px">'
+      + '<div style="display:flex;gap:8px;margin-bottom:12px">'
+      + '<input type="url" value="' + siteUrl + '" style="flex:1" readonly>'
+      + '<button class="btn" onclick="analyzed=false;document.getElementById(\'ob-content\').innerHTML=STEPS[1]()">재분석</button>'
+      + '</div>'
+      + '<div class="ob-stat-grid" style="margin-top:0">'
+      + [{v:procCount+'개',l:'시술 페이지'},{v:docCount+'명',l:'의료진'},{v:baCount+'장',l:'B/A 사진'},{v:facCount+'장',l:'시설 사진'}]
+          .map(function(s){ return '<div class="ob-stat"><div class="ob-stat-val">' + s.v + '</div><div class="ob-stat-lbl">' + s.l + '</div></div>'; }).join('')
+      + '</div></div>'
+
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+      + '<div class="ob-box" style="margin-bottom:0">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">포지셔닝 진단</div>'
+      + '<div style="font-size:12px;color:var(--s700);line-height:1.7">' + positioning.substring(0, 120) + (positioning.length > 120 ? '...' : '') + '</div>'
+      + '</div>'
+      + '<div class="ob-box" style="margin-bottom:0">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">AI 추천 템플릿</div>'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<div style="width:44px;height:44px;border-radius:8px;background:' + tmplBgs[recTmpl] + ';flex-shrink:0"></div>'
+      + '<div><div style="font-size:13px;font-weight:700;color:var(--s900)">' + recTmplNames[recTmpl] + '</div>'
+      + '<div style="font-size:10px;color:var(--s400)">다음 단계에서 변경 가능</div></div>'
+      + '</div></div>'
+      + '</div>'
+
+      + '<div class="ob-box" style="margin-bottom:14px">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">AI 생성 Hero 카피</div>'
+      + '<div style="font-size:14px;font-weight:600;color:var(--navy);line-height:1.7">' + heroCopy + '</div>'
+      + '</div>'
+
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+      + '<div class="ob-box" style="margin-bottom:0">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">SEO 키워드 (상위 5개)</div>'
+      + kws.map(function(k){ return '<span class="ob-kw-chip">' + k + '</span>'; }).join('')
+      + '</div>'
+      + '<div class="ob-box" style="margin-bottom:0">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">컴플라이언스 사전 스캔</div>'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<span style="font-size:24px;color:var(--green)">✓</span>'
+      + '<div><div style="font-size:13px;font-weight:700;color:#065F46">명백한 위반 0건</div>'
+      + '<div style="font-size:10px;color:var(--s400)">회색지대는 Step 3에서 확인</div></div>'
+      + '</div></div>'
+      + '</div>'
+
+      + '<div class="ob-box" style="margin-bottom:20px">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">생성될 사이트 섹션 — 11개</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px">'
+      + [
+          {ic:'🏠', lb:'히어로 (메인 비주얼)'},
+          {ic:'🧭', lb:'DECISION GUIDE'},
+          {ic:'👨‍⚕️', lb:'의료진 소개'},
+          {ic:'💉', lb:'시술 안내'},
+          {ic:'👁',  lb:'눈 성형 상세'},
+          {ic:'👃', lb:'코 성형 상세'},
+          {ic:'📸', lb:'시술 사례'},
+          {ic:'⭐', lb:'환자 후기'},
+          {ic:'📞', lb:'연락처 & 운영시간'},
+          {ic:'❓', lb:'자주 묻는 질문'},
+          {ic:'📍', lb:'오시는 길'},
+        ].map(function(s){
+          return '<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--s50);border:1px solid var(--s100);border-radius:6px;font-size:12px;color:var(--s700)">'
+            + '<span>' + s.ic + '</span>' + s.lb + '</div>';
+        }).join('')
+      + '</div></div>'
+
+      + '<div class="ob-foot"><span style="font-size:12px;color:var(--s400)">AI 드래프트 완성 — 세부 조정은 다음 단계에서</span>'
+      + '<button class="btn btn-navy" onclick="doneStep(1)">다음 — 크리에이티브 확인 →</button></div>';
+  },
+
+  /* STEP 2 — 크리에이티브 확인 */
+  2: function() {
+    var r = analysisResult || {};
+    var strategies = (r.strategies && r.strategies.length)
+      ? r.strategies.map(function(s){ return {t:s.title, d:s.desc}; })
+      : [
+          {t:'7개 분야 카테고리 분기', d:'일본 환자 의사결정 분기점'},
+          {t:'의사 매칭 카드',         d:'케이스 기반 의사 자동 팀플'},
+          {t:'4중 CTA — LINE 우선',    d:'LINE/예약폼/전화 타겟팅'},
+          {t:'D+3/7/14 팔로잉',        d:'수술 후 자동 리타겟팅'},
+        ];
+    var recTmpl = (r.recommendedTemplate !== undefined && r.recommendedTemplate !== null) ? r.recommendedTemplate : 0;
+    var tmpls = [
+      {ko:'감성브랜드형', desc:'Banobagi 계열 · 여성 감성', bg:'linear-gradient(135deg,#FFB6C1,#FF69B4)', l1:'オーレ', l2:'いつも綺麗でいましょ。', tags:['핑크','20-30대']},
+      {ko:'프리미엄형',   desc:'JW 계열 · 미니멀 럭셔리',  bg:'linear-gradient(135deg,#0D1B3E,#1e2f5e)', l1:'OLE',   l2:'Crafted Elegance',    tags:['블랙','40-50대']},
+      {ko:'컨버전형',     desc:'View PS 계열 · 4중 CTA',    bg:'linear-gradient(135deg,#7C3AED,#5B21B6)', l1:'OLE.', l2:'すぐに相談する',       tags:['전환','광고 유입']},
+    ];
+
+    function assetCard(item) {
+      return '<div class="asset-card" onclick="this.classList.toggle(\'selected\')">'
+        + (item.ba ? '<div class="asset-badge-ba">B/A</div>' : '')
+        + '<div class="asset-thumb">' + item.em + '</div>'
+        + '<div class="asset-actions">'
+        + '<button class="asset-btn" onclick="event.stopPropagation();showToast(\'' + item.lb + ' 교체\',\'\')" title="교체">↺</button>'
+        + '<button class="asset-btn" onclick="event.stopPropagation();showToast(\'' + item.lb + ' 삭제\',\'error\')" title="삭제">✕</button>'
+        + '</div>'
+        + '<div class="asset-meta"><div class="asset-name">' + item.lb + '</div><div class="asset-sz">' + item.sz + '</div></div>'
+        + '</div>';
+    }
+    function assetSection(title, count, required, items) {
+      return '<div class="asset-cat">'
+        + '<div class="asset-cat-head">'
+        + '<div class="asset-cat-title">' + title + ' <span class="asset-cat-count">' + count + '장</span></div>'
+        + (required ? '<span style="font-size:12px;color:var(--red);font-weight:600">필수</span>' : '<span style="font-size:12px;color:var(--s400)">권장</span>')
+        + '</div>'
+        + '<div class="asset-grid">'
+        + items.map(assetCard).join('')
+        + '<div class="asset-add" onclick="showToast(\'파일 업로드 (데모)\',\'\')"><span style="font-size:24px">+</span><span>추가</span></div>'
+        + '</div></div>';
+    }
+
+    var baItems = [
+      {em:'👁', lb:'쌍꺼풀_Before.jpg',  sz:'180KB', ba:true},
+      {em:'✨', lb:'쌍꺼풀_After.jpg',   sz:'190KB', ba:true},
+      {em:'👃', lb:'코성형_Before.jpg',   sz:'200KB', ba:true},
+      {em:'✨', lb:'코성형_After.jpg',    sz:'210KB', ba:true},
+      {em:'💆', lb:'리프팅_Before.jpg',   sz:'175KB', ba:true},
+      {em:'✨', lb:'리프팅_After.jpg',    sz:'185KB', ba:true},
+      {em:'👀', lb:'눈매교정_Before.jpg', sz:'165KB', ba:true},
+      {em:'✨', lb:'눈매교정_After.jpg',  sz:'170KB', ba:true},
+    ];
+    var doctorItems = [
+      {em:'👨‍⚕️', lb:'원장 프로필.jpg',   sz:'350KB'},
+      {em:'👩‍⚕️', lb:'이수진 전문의.jpg', sz:'280KB'},
+      {em:'👨‍⚕️', lb:'박정호 전문의.jpg', sz:'290KB'},
+      {em:'👩‍⚕️', lb:'최유리 전문의.jpg', sz:'310KB'},
+      {em:'👨‍⚕️', lb:'정태윤 전문의.jpg', sz:'275KB'},
+    ];
+    var facilityItems = [
+      {em:'🏥', lb:'로비.jpg',   sz:'420KB'},
+      {em:'🛋', lb:'상담실.jpg', sz:'380KB'},
+      {em:'🔬', lb:'수술실.jpg', sz:'510KB'},
+      {em:'🛏', lb:'회복실.jpg', sz:'340KB'},
+    ];
+
+    return '<div class="ob-tag">STEP 2 · 크리에이티브</div>'
+      + '<h2 class="ob-title">템플릿 선택 & 사진 업로드</h2>'
+      + '<p class="ob-desc">AI 추천 전략을 확인하고 템플릿과 사진 자산을 확정합니다.</p>'
+
+      + '<div style="margin-bottom:16px">'
+      + '<div class="ob-section-lbl">전략 요약 (AI 생성)</div>'
+      + '<div class="ob-strategy-grid">'
+      + strategies.slice(0,4).map(function(s){
+          return '<div class="ob-strategy-box"><div class="ob-strategy-box-title">' + s.t + '</div><div class="ob-strategy-box-desc">' + s.d + '</div></div>';
+        }).join('')
+      + '</div>'
+      + '<div style="display:flex;gap:8px;margin-top:8px">'
+      + '<button class="btn" onclick="showToast(\'PDF 다운로드 준비 중...\',\'\')">📄 기획안 PDF</button>'
+      + '<button class="btn" onclick="showToast(\'링크 복사됨\',\'success\')">🔗 병원 공유</button>'
+      + '</div></div>'
+
+      + '<div style="margin-bottom:20px">'
+      + '<div class="ob-section-lbl">템플릿 선택</div>'
+      + '<div class="tmpl-grid">'
+      + tmpls.map(function(t, i){
+          var sel = (tmpl === i);
+          return '<div class="tmpl-card' + (sel ? ' selected' : '') + '" onclick="tmpl=' + i + ';document.getElementById(\'ob-content\').innerHTML=STEPS[2]()">'
+            + (sel ? '<div class="tmpl-check">✓</div>' : '')
+            + (i === recTmpl ? '<div style="position:absolute;top:7px;left:7px;background:var(--blue);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px">AI 추천</div>' : '')
+            + '<div class="tmpl-preview" style="background:' + t.bg + '"><div style="text-align:center;color:#fff"><div style="font-size:18px;font-weight:700">' + t.l1 + '</div><div style="font-size:10px;opacity:.8;margin-top:4px">' + t.l2 + '</div></div></div>'
+            + '<div class="tmpl-body"><div class="tmpl-name">' + t.ko + '</div><div class="tmpl-desc">' + t.desc + '</div>'
+            + t.tags.map(function(tag){ return '<span class="tmpl-tag">' + tag + '</span>'; }).join('')
+            + '</div></div>';
+        }).join('')
+      + '</div></div>'
+
+      + '<div style="margin-bottom:16px">'
+      + '<div class="ob-section-lbl">사진 자산</div>'
+      + '<div class="asset-upload-zone" onclick="showToast(\'파일 업로드 (데모)\',\'\')">'
+      + '<div style="font-size:32px;margin-bottom:8px">📁</div>'
+      + '<div style="font-size:14px;font-weight:500;color:var(--s700);margin-bottom:4px">사진을 드래그하거나 클릭하여 업로드</div>'
+      + '<div style="font-size:12px;color:var(--s400)">PNG, JPG, WebP · 최대 10MB · AI 자동 분류</div>'
+      + '</div>'
+      + assetSection('✦ B/A 사진',      baItems.length,       true,  baItems)
+      + assetSection('👨‍⚕️ 의료진 프로필', doctorItems.length,   true,  doctorItems)
+      + assetSection('🏥 시설 사진',     facilityItems.length, false, facilityItems)
+      + '</div>'
+
+      + '<div class="ob-foot">'
+      + '<button class="btn" onclick="goStep(1)">← 이전</button>'
+      + '<button class="btn btn-navy" onclick="doneStep(2)">다음 — 검수 게이트 →</button>'
+      + '</div>';
+  },
+
+  /* STEP 3 — 검수 게이트 */
+  3: function() {
+    var r = analysisResult || {};
+    var compIssues = (r.complianceIssues && r.complianceIssues.length) ? r.complianceIssues : [];
+    var grayZone   = compIssues.filter(function(c){ return c.level === 'gray'; });
+    var blocked    = compIssues.filter(function(c){ return c.level === 'block'; });
+
+    var copyRows = [
+      {sec:'Hero',       kr:'아름다움의 새로운 기준',               ja:'本当の美しさは、自然さから',                                                b:'ok'},
+      {sec:'CTA',        kr:'상담 받기',                             ja:'LINEで無料相談（15分）',                                                    b:'ok'},
+      {sec:'About',      kr:'20년의 노하우로 자연스러운 결과를...', ja:'韓国・ソウル江南で20年、「綺麗になったね」と言われる手術を。',              b:'fix'},
+      {sec:'Decision',   kr:'(신규) 불안 카테고리',                  ja:'「不安」から選ぶ — あなたのケースに合うドクターを',                        b:'ai'},
+      {sec:'의료진',     kr:'김현준 원장 — 전문 15년',               ja:'院長 キム・ヒョンジュン — 二重専門15年・症例 8,000例',                    b:'ok'},
+      {sec:'시술 안내',  kr:'쌍꺼풀 매몰법 ₩400,000~',              ja:'埋没法 ₩400,000〜 / 切開法 ₩800,000〜',                                  b:'ok'},
+      {sec:'눈 성형',    kr:'자연스러운 쌍꺼풀 전문',                ja:'バレない二重整形 — 一重に見せる埋没法も対応',                              b:'ok'},
+      {sec:'코 성형',    kr:'코 필러 / 코 수술',                     ja:'鼻フィラー ₩300,000〜 / 鼻手術 ₩2,500,000〜',                            b:'ai'},
+      {sec:'시술 사례',  kr:'B/A 사진 87장 · 케이스 기반',           ja:'症例 87件 · あなたのケースに近い施術例をご覧ください',                   b:'ai'},
+      {sec:'환자 후기',  kr:'Google 4.8점 · 1,200건+',              ja:'Google評価 4.8/5（口コミ1,200件以上）',                                   b:'ok'},
+    ];
+    var flagged = copyRows.filter(function(rw){ return rw.b !== 'ok'; });
+    var passed  = copyRows.filter(function(rw){ return rw.b === 'ok'; });
+    var autoPassed = passed.length + 5;
+
+    function copyRow(rw) {
+      var badge = rw.b==='ok' ? '<span class="badge-ok">통과</span>' : rw.b==='fix' ? '<span class="badge-fix">수정필</span>' : '<span class="badge-ai">AI</span>';
+      var bg    = rw.b !== 'ok' ? ' style="background:#FFFBEB"' : '';
+      return '<tr' + bg + '><td style="font-size:12px;font-weight:600;color:var(--s700)">' + rw.sec + '</td>'
+        + '<td>' + rw.kr + '</td><td style="color:var(--s900)">' + rw.ja + '</td>'
+        + '<td style="text-align:left">' + badge + '</td></tr>';
+    }
+
+    return '<div class="ob-tag">STEP 3 · 검수 게이트</div>'
+      + '<h2 class="ob-title">컴플라이언스 & 카피 통합 검수</h2>'
+      + '<p class="ob-desc">AI 자동 통과 항목은 집계만 표시됩니다. 플래그된 항목만 확인하세요.</p>'
+
+      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'
+      + [
+          {v: autoPassed + '건', lbl:'AI 자동 통과', c:'var(--green)'},
+          {v: (flagged.length + grayZone.length) + '건', lbl:'검토 필요',   c:'var(--amber)'},
+          {v: blocked.length + '건', lbl:'명백한 위반', c: blocked.length > 0 ? 'var(--red)' : 'var(--s400)'},
+        ].map(function(b){
+          return '<div style="text-align:center;padding:12px;background:var(--s0);border:1px solid var(--s200);border-radius:var(--rl)">'
+            + '<div style="font-size:22px;font-weight:800;color:' + b.c + '">' + b.v + '</div>'
+            + '<div style="font-size:10px;color:var(--s400);margin-top:2px">' + b.lbl + '</div></div>';
+        }).join('')
+      + '</div>'
+
+      + '<div class="ob-card" style="margin-bottom:14px">'
+      + '<div class="ob-card-head" style="display:flex;align-items:center;justify-content:space-between">'
+      + '<span>광고법 필터 — 5종 검사</span>'
+      + '<span style="font-size:12px;color:var(--green);font-weight:600">명백한 위반 0건</span>'
+      + '</div>'
+      + '<div class="ob-card-body">'
+      + ['"最高/唯一" 표현','"100% 보장" 표현','효과 단정 표현','비교 광고','의약외품 효과 표현'].map(function(t){
+          return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--s600)">'
+            + '<span style="color:var(--green);font-weight:700;font-size:13px">✓</span>' + t
+            + '<span style="margin-left:auto;font-size:10px;color:var(--s400)">미검출</span></div>';
+        }).join('')
+      + (grayZone.length > 0
+          ? '<div style="margin-top:10px;padding:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;font-size:12px;color:var(--s700)">⚠ 회색지대 ' + grayZone.length + '건 — 담당자 확인 필요</div>'
+          : '')
+      + '<div style="margin-top:10px;padding:9px 12px;background:var(--s50);border-radius:6px;font-size:12px;color:var(--s600)">⚠ B/A 사진: 배경 환자 대상 → 로그인 게이트 없이 노출 가능 (회색지대 OK)</div>'
+      + '</div></div>'
+
+      + '<div class="ob-card" style="margin-bottom:14px">'
+      + '<div class="ob-card-head" style="display:flex;align-items:center;justify-content:space-between">'
+      + '<span>일본어 카피 검수</span>'
+      + '<span style="font-size:12px;color:var(--s400)">' + passed.length + '건 자동 통과 · ' + flagged.length + '건 검토 필요</span>'
+      + '</div>'
+      + '<div class="ob-card-body" style="padding:0">'
+      + '<div style="overflow-x:auto"><table class="copy-table"><thead><tr>'
+      + '<th style="width:72px">섹션</th><th>한국 원문</th><th>일본어 재집필</th><th style="width:60px">상태</th>'
+      + '</tr></thead><tbody>'
+      + copyRows.map(copyRow).join('')
+      + '</tbody></table></div>'
+      + '</div></div>'
+
+      + '<div style="display:flex;gap:8px;margin-bottom:8px">'
+      + '<button class="btn" onclick="showToast(\'검수 리포트 PDF 준비 중...\',\'\')">📄 검수 리포트 PDF</button>'
+      + '<button class="btn" onclick="showToast(\'수정 모드 전환\',\'\')">✏ 카피 수정</button>'
+      + '</div>'
+
+      + '<div class="ob-foot">'
+      + '<button class="btn" onclick="goStep(2)">← 이전</button>'
+      + '<button class="btn btn-navy" onclick="doneStep(3)">다음 — 연동 & SEO →</button>'
+      + '</div>';
+  },
+
+  /* STEP 4 — 연동 & SEO */
+  4: function() {
+    var integrations = [
+      {t:'LINE 상시 채팅',       sub:'상담 링크 + IPPEO CRM 자동 연결',       on:true},
+      {t:'IPPEO CRM API',        sub:'문의 수 → 매일 싱크, DB 자동 저장',     on:true},
+      {t:'비즈니스 상담 배정',   sub:'문의 접수 후 담당 상담사 자동 배정',     on:false},
+      {t:'사전 리마인드',        sub:'방문 24시간 전 IPPEO 자동 발송',         on:true},
+      {t:'D+3/7/14 팔로잉',      sub:'수술 후 3/7/14일 LINE 후속 메시지',     on:true},
+      {t:'GA4 + Search Console', sub:'성과 분석 자동 연동',                    on:false},
+      {t:'Meta (Facebook) 광고', sub:'Meta 채널 연결',                         on:false},
+    ];
+    var seoTools = [
+      {t:'Schema.org 자동 설정',                    on:true},
+      {t:'Sitemap.xml 자동 제출 (Google/Bing/Perplexity)', on:true},
+      {t:'Core Web Vitals 최적화',                  on:true},
+      {t:'A/B 테스트 자동화',                       on:true},
+      {t:'GA4 + Search Console 연동',               on:true},
+      {t:'AI Overviews (AEO) 최적화',               on:true},
+    ];
+
+    return '<div class="ob-tag">STEP 4 · 연동 & SEO</div>'
+      + '<h2 class="ob-title">IPPEO 연동 & SEO·AEO 설정</h2>'
+      + '<p class="ob-desc">모든 연동과 SEO 최적화를 한 화면에서 처리합니다.</p>'
+
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">'
+      + '<div>'
+      + '<div class="ob-section-lbl">SEO · AEO 점수</div>'
+      + '<div class="score-grid" style="margin-bottom:0">'
+      + '<div class="score-card" style="background:var(--navy);padding:14px 16px">'
+      + '<div style="font-size:9px;font-weight:700;opacity:.6;margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">SEO</div>'
+      + '<div class="score-num">94<span class="score-unit">/100</span></div>'
+      + '<div class="score-items" style="margin-top:8px">Sitemap ✓ · Schema ✓ · Speed 98</div></div>'
+      + '<div class="score-card" style="background:var(--blue);padding:14px 16px">'
+      + '<div style="font-size:9px;font-weight:700;opacity:.6;margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">AEO</div>'
+      + '<div class="score-num">91<span class="score-unit">/100</span></div>'
+      + '<div class="score-items" style="margin-top:8px">ChatGPT ✓ · Perplexity ✓ · AI OV ✓</div></div>'
+      + '</div></div>'
+      + '<div>'
+      + '<div class="ob-section-lbl">SEO 도구</div>'
+      + '<div class="ob-box" style="padding:0 16px;margin-bottom:0">'
+      + seoTools.map(function(r){
+          return '<div class="tool-row"><span class="tool-lbl" style="font-size:12px">' + r.t + '</span>'
+            + '<div class="toggle-sw ' + (r.on ? 'on' : 'off') + '" onclick="this.classList.toggle(\'on\');this.classList.toggle(\'off\')"></div></div>';
+        }).join('')
+      + '</div></div>'
+      + '</div>'
+
+      + '<div class="ob-section-lbl">연동 설정</div>'
+      + '<div class="ob-box" style="padding:0 20px;margin-bottom:16px">'
+      + integrations.map(function(r){
+          return '<div class="toggle-row">'
+            + '<div class="toggle-sw ' + (r.on ? 'on' : 'off') + '" onclick="this.classList.toggle(\'on\');this.classList.toggle(\'off\')"></div>'
+            + '<div class="toggle-info"><div class="toggle-title">' + r.t + '</div><div class="toggle-sub">' + r.sub + '</div></div>'
+            + '<span class="toggle-state">' + (r.on ? '켜짐' : '꺼짐') + '</span>'
+            + '</div>';
+        }).join('')
+      + '</div>'
+
+      + '<div class="ob-foot">'
+      + '<button class="btn" onclick="goStep(3)">← 이전</button>'
+      + '<button class="btn btn-navy" onclick="doneStep(4)">다음 — 미리보기 & 게시 →</button>'
+      + '</div>';
+  },
+
+  /* STEP 5 — 게시 */
+  5: function() {
+    var summary = [
+      'AI 드래프트 — 전략·카피·템플릿·SEO 자동 생성 완료',
+      '크리에이티브 — 템플릿 선택·사진 자산 확정 완료',
+      '검수 게이트 — 컴플라이언스·카피 검수 통과',
+      '연동 & SEO — LINE·CRM·AEO 모두 활성',
+    ];
+
+    return '<div class="ob-tag">STEP 5 · 게시</div>'
+      + '<h2 class="ob-title">미리보기 & 1클릭 게시</h2>'
+      + '<p class="ob-desc">최종 확인 후 게시합니다. DNS 설정 완료 후 도메인 연결.</p>'
+
+      + '<div class="preview-wrap">'
+      + '<div class="phone-frame">'
+      + '<div class="phone-screen">'
+      + '<div class="phone-topbar">'
+      + '<span style="font-size:10px;font-weight:700;color:#fff">' + H.nameJa + '</span>'
+      + '<div style="display:flex;gap:5px;font-size:8px;color:rgba(255,255,255,.5)">'
+      + ['시술','의료진','후기','비용','J · A'].map(function(m){ return '<span>' + m + '</span>'; }).join('')
+      + '</div></div>'
+      + '<div class="phone-hero">'
+      + '<div style="font-size:13px;font-weight:700;color:var(--navy);line-height:1.6;position:relative">'
+      + '「変わったね」では<br>なく「<span style="color:#E91E8C">綺麗に<br>なったね</span>」と<br>言われる手術を。'
+      + '</div>'
+      + '<div style="background:#06C755;color:#fff;font-size:10px;font-weight:700;padding:7px 14px;border-radius:6px;display:inline-block;margin-top:10px">LINE で相談</div>'
+      + '</div>'
+      + '<div class="phone-menu">'
+      + ['二重整形','鼻整形','輪郭','ドクター','費用','FAQ'].map(function(m){ return '<div class="phone-menu-item">' + m + '</div>'; }).join('')
+      + '</div></div></div>'
+
+      + '<div class="publish-card">'
+      + '<div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">1클릭 게시</div>'
+      + '<div style="font-size:12px;color:var(--s400);margin-bottom:14px">게시 후 DNS 연결 완료 시 즉시 노출됩니다</div>'
+      + '<div style="display:flex;gap:8px;margin-bottom:16px">'
+      + '<input type="text" value="' + H.url + '" style="flex:1">'
+      + '<button class="btn btn-navy" onclick="publishSite()">게시</button>'
+      + '</div>'
+      + '<div style="margin-bottom:12px">'
+      + summary.map(function(c){
+          return '<div style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--s700)">'
+            + '<span style="color:var(--green);font-size:13px;font-weight:700">✓</span>' + c + '</div>';
+        }).join('')
+      + '</div>'
+      + '<div style="padding:10px 12px;background:var(--s50);border-radius:6px;font-size:12px;color:var(--s500)">'
+      + '게시 후 → GA4 + Search Console + IPPEO CRM 자동 활성화'
+      + '</div>'
+      + '</div>'
+      + '</div>'
+
+      + '<div class="ob-foot">'
+      + '<button class="btn" onclick="goStep(4)">← 이전</button>'
+      + '<button class="btn btn-navy" onclick="publishSite()">게시하기 →</button>'
+      + '</div>';
+  },
+};
+
+/* ── 유틸 ── */
+function publishSite() {
+  if (confirm(H.name + ' 사이트를 게시하시겠습니까?')) {
+    showToast('🚀 ' + H.name + ' 사이트가 게시되었습니다!', 'success');
+    setTimeout(function(){ location.href = 'hospital_detail.html?id=' + H.id; }, 1800);
+  }
+}
+
+function showToast(msg, type) {
+  var e = document.getElementById('__toast');
+  if (e) e.remove();
+  var bg = type === 'success' ? '#059669' : type === 'error' ? '#DC2626' : '#0F1E3C';
+  var t  = document.createElement('div');
+  t.id   = '__toast';
+  t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:' + bg + ';color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap';
+  t.textContent   = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){
+    t.style.opacity = '0'; t.style.transition = 'opacity .3s';
+    setTimeout(function(){ t.remove(); }, 300);
+  }, 2500);
+}
+
+/* ── 초기 렌더 ── */
+renderNav();
+document.getElementById('ob-content').innerHTML = STEPS[viewStep]();
+</script>
+</body>
+</html>

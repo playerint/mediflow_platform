@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>온보딩 관리 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/onboarding.css">
+</head>
+<body>
+<div id="sidebar-mount" data-active="onboarding"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">온보딩 관리</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" onclick="location.href='hospital_new.html'">+ 신규 온보딩 시작</button>
+    </div>
+  </div>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px" id="ob-kpi"></div>
+    <div class="grid2">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">진행 중 <span style="color:var(--gray-400);font-weight:400">3건</span></div>
+        <div id="ob-active"></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px">완료 <span style="color:var(--gray-400);font-weight:400">9건</span></div>
+        <div id="ob-done"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/onboarding_list.js"></script>
+</body>
+</html>

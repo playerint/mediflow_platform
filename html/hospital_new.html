@@ -1,0 +1,843 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>신규 병원 등록 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+/* ── 위자드 스텝 ── */
+.wizard-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px;}
+.wz-step{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;min-width:130px;}
+.wz-step:not(:last-child)::after{content:'';position:absolute;top:16px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:var(--gray-200);}
+.wz-step.done:not(:last-child)::after{background:var(--teal);}
+.wz-bubble{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--gray-200);background:#fff;color:var(--gray-400);transition:all .2s;}
+.wz-step.done .wz-bubble{background:var(--teal);border-color:var(--teal);color:#fff;}
+.wz-step.current .wz-bubble{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 0 0 4px rgba(15,30,60,.12);}
+.wz-label{font-size:12px;color:var(--gray-400);}
+.wz-step.done .wz-label{color:var(--teal-d);font-weight:500;}
+.wz-step.current .wz-label{color:var(--navy);font-weight:600;}
+
+/* ── 등록 카드 ── */
+.reg-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;max-width:800px;margin:0 auto;}
+.reg-card-head{padding:20px 28px;border-bottom:1px solid var(--gray-100);background:linear-gradient(90deg,rgba(13,148,136,.04),transparent);}
+.reg-card-body{padding:28px;}
+.reg-card-foot{padding:16px 28px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;align-items:center;justify-content:space-between;}
+
+/* ── 폼 ── */
+.field-group{margin-bottom:20px;}
+.field-group-title{font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--gray-100);}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-grid.col3{grid-template-columns:1fr 1fr 1fr;}
+.field-full{grid-column:1/-1;}
+.f-label{font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:4px;}
+.f-hint{font-size:12px;color:var(--gray-400);margin-top:3px;}
+.f-required::after{content:'*';color:var(--red);margin-left:2px;}
+
+/* ── 플랜 선택 ── */
+.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.plan-card{border:2px solid var(--gray-200);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all .2s;position:relative;}
+.plan-card:hover{border-color:var(--gray-300);}
+.plan-card.selected{border-color:var(--teal);background:rgba(13,148,136,.03);}
+.plan-card.selected::after{content:'✓';position:absolute;top:10px;right:12px;font-size:14px;color:var(--teal);font-weight:700;}
+.plan-name{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.plan-price{font-size:20px;font-weight:700;color:var(--teal);margin-bottom:8px;}
+.plan-feature{font-size:12px;color:var(--gray-500);padding:2px 0;display:flex;align-items:center;gap:4px;}
+
+/* ── 확인 요약 ── */
+.summary-section{margin-bottom:16px;}
+.summary-title{font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.summary-row{display:flex;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--gray-100);}
+.summary-row:last-child{border-bottom:none;}
+.summary-label{width:140px;font-size:12px;color:var(--gray-400);flex-shrink:0;}
+.summary-val{font-size:13px;color:var(--gray-700);}
+
+/* ── 완료 화면 ── */
+.success-wrap{text-align:center;padding:40px 20px;}
+</style>
+</head>
+<body>
+<div id="sidebar-mount" data-active="hospitals"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <a class="topbar-back" href="hospital_list.html">병원 목록</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">신규 병원 등록</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" onclick="if(confirm('작성 중인 내용이 초기화됩니다. 나가시겠습니까?'))location.href='hospital_list.html'">✕ 취소</button>
+    </div>
+  </div>
+
+  <div class="content fade" style="max-width:900px">
+
+    <!-- 위자드 스텝 -->
+    <div class="wizard-bar" id="wizard-bar"></div>
+
+    <!-- 등록 카드 -->
+    <div class="reg-card" id="reg-card"></div>
+
+  </div>
+</main>
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+// 폼 데이터 저장소
+const formData = {
+  // STEP 1 — 기본 정보
+  nameKr: '', nameJa: '', specialty: '', subSpecialty: '',
+  phone: '', email: '', address: '', website: '',
+  directorName: '', directorTitle: '',
+  // STEP 2 — 플랜
+  plan: 'Pro',
+  autoRenew: true,
+  contractStart: new Date().toISOString().slice(0, 10),
+  // STEP 3 — 담당자
+  managerName: '', managerEmail: '', memo: '',
+  // STEP 4 — 확인
+};
+
+const STEPS = [
+  {label:'병원 기본 정보', icon:'🏥'},
+  {label:'플랜 선택',       icon:'📄'},
+  {label:'담당자 설정',     icon:'👤'},
+  {label:'최종 확인',       icon:'✓'},
+];
+
+let currentStep = 1;
+
+function renderWizard() {
+  document.getElementById('wizard-bar').innerHTML = STEPS.map((s, i) => {
+    const n = i + 1;
+    const cls = n < currentStep ? 'done' : n === currentStep ? 'current' : '';
+    return `<div class="wz-step ${cls}">
+      <div class="wz-bubble">${n < currentStep ? '✓' : n}</div>
+      <div class="wz-label">${s.icon} ${s.label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── STEP 1: 기본 정보 ──
+function renderStep1() {
+  return `
+    <div class="reg-card-head">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px">🏥 STEP 1. 병원 기본 정보</div>
+      <div style="font-size:12px;color:var(--gray-400)">병원명, 전문 분야, 연락처 등 기본 정보를 입력하세요.</div>
+    </div>
+    <div class="reg-card-body">
+      <div class="field-group">
+        <div class="field-group-title">병원명</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label f-required">병원명 (한국어)</div>
+            <input type="text" id="nameKr" value="${formData.nameKr}" placeholder="강남뷰티클리닉" oninput="formData.nameKr=this.value;autoFillJa()">
+          </div>
+          <div>
+            <div class="f-label f-required">병원명 (일본어)</div>
+            <input type="text" id="nameJa" value="${formData.nameJa}" placeholder="카타카나 자동 변환" oninput="formData.nameJa=this.value;formData.nameJaManual=true">
+            <div class="f-hint">* AI 자동 변환 후 수정 가능</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">진료 정보</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label f-required">주 전문 분야</div>
+            <select id="specialty" onchange="formData.specialty=this.value">
+              <option value="">선택하세요</option>
+              ${['쌍꺼풀·눈성형','코성형','안면윤곽','가슴성형','지방흡입','피부·레이저','눈·코 복합','기타'].map(s=>`<option ${formData.specialty===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <div class="f-label">세부 전문 시술</div>
+            <input type="text" id="subSpecialty" value="${formData.subSpecialty}" placeholder="쌍꺼풀, 눈매교정, 코끝 등" oninput="formData.subSpecialty=this.value">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">연락처</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label f-required">대표 전화</div>
+            <input type="text" id="phone" value="${formData.phone}" placeholder="숫자만 입력하세요" maxlength="13" oninput="formatPhone(this)" inputmode="numeric">
+            <div class="f-hint" id="phone-hint">02, 031… 또는 010으로 시작</div>
+          </div>
+          <div>
+            <div class="f-label f-required">이메일</div>
+            <input type="text" id="email" value="${formData.email}" placeholder="contact@clinic.co.kr" oninput="validateEmail(this)" onblur="validateEmail(this,true)">
+            <div class="f-hint" id="email-hint"></div>
+          </div>
+          <div class="field-full">
+            <div class="f-label f-required">병원 주소</div>
+            <input type="text" id="address" value="${formData.address}" placeholder="서울 강남구 논현로 123" oninput="formData.address=this.value">
+          </div>
+          <div>
+            <div class="f-label">기존 홈페이지 URL</div>
+            <input type="text" id="website" value="${formData.website || 'https://'}" placeholder="https://clinic.co.kr" oninput="formatUrl(this)" onfocus="if(!this.value)this.value='https://'" onblur="if(this.value==='https://')this.value=''">
+            <div class="f-hint">AI 분석에 활용됩니다</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">원장 정보</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label f-required">원장명</div>
+            <input type="text" id="directorName" value="${formData.directorName}" placeholder="홍길동" oninput="formData.directorName=this.value">
+          </div>
+          <div>
+            <div class="f-label">직함</div>
+            <input type="text" id="directorTitle" value="${formData.directorTitle}" placeholder="원장" oninput="formData.directorTitle=this.value">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reg-card-foot">
+      <span style="font-size:12px;color:var(--gray-400)">* 표시는 필수 입력 항목입니다</span>
+      <button class="btn btn-primary" onclick="nextStep(1)">다음 단계 →</button>
+    </div>`;
+}
+
+// ── STEP 2: 플랜 선택 ──
+function renderStep2() {
+  const plans = [
+    {
+      id:'Basic', price:'₩390,000', period:'/월',
+      features:['일본어 홈페이지 1개','LINE 자동상담','기본 AEO 설정','월간 리포트'],
+      color:'gray'
+    },
+    {
+      id:'Pro', price:'₩890,000', period:'/월',
+      features:['모든 Basic 기능','리타게팅 광고 관리','고급 AEO + 구조화 데이터','전담 운영 매니저','실시간 CRM 대시보드'],
+      color:'blue', popular:true
+    },
+    {
+      id:'Enterprise', price:'₩1,490,000', period:'/월',
+      features:['모든 Pro 기능','전용 서버 운영','커스텀 도메인 다수','컴플라이언스 전담팀','맞춤 리포트 제공'],
+      color:'purple'
+    }
+  ];
+
+  return `
+    <div class="reg-card-head">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px">📄 STEP 2. 플랜 선택</div>
+      <div style="font-size:12px;color:var(--gray-400)">병원에 맞는 구독 플랜을 선택하세요.</div>
+    </div>
+    <div class="reg-card-body">
+      <div class="plan-cards" id="plan-cards">
+        ${plans.map(p=>`
+          <div class="plan-card ${formData.plan===p.id?'selected':''}" onclick="selectPlan('${p.id}')" id="plan-${p.id}">
+            ${p.popular ? '<div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:0 0 6px 6px">POPULAR</div>' : ''}
+            <div class="plan-name">${p.id}</div>
+            <div class="plan-price">${p.price}<span style="font-size:12px;color:var(--gray-400);font-weight:400">${p.period}</span></div>
+            ${p.features.map(f=>`<div class="plan-feature"><span style="color:var(--teal)">✓</span>${f}</div>`).join('')}
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--gray-100)">
+        <div class="field-group-title" style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">계약 설정</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label">계약 시작일</div>
+            <input type="date" id="contractStart" value="${formData.contractStart}" oninput="formData.contractStart=this.value">
+          </div>
+          <div>
+            <div class="f-label">자동 갱신</div>
+            <div style="display:flex;align-items:center;gap:10px;padding-top:8px">
+              <label class="toggle-wrap">
+                <input type="checkbox" id="autoRenew" ${formData.autoRenew ? 'checked' : ''} onchange="formData.autoRenew=this.checked">
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+              <span style="font-size:13px;color:var(--gray-700)">매년 자동 갱신</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reg-card-foot">
+      <button class="btn" onclick="prevStep(2)">← 이전</button>
+      <button class="btn btn-primary" onclick="nextStep(2)">다음 단계 →</button>
+    </div>`;
+}
+
+// ── STEP 3: 담당자 설정 ──
+function renderStep3() {
+  const managers = ['김운영 (슈퍼 어드민)', '이수진 (운영팀)'];
+  return `
+    <div class="reg-card-head">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px">👤 STEP 3. 담당자 설정</div>
+      <div style="font-size:12px;color:var(--gray-400)">이 병원을 담당할 매니저를 지정하세요.</div>
+    </div>
+    <div class="reg-card-body">
+      <div class="field-group">
+        <div class="field-group-title">담당 매니저</div>
+        <div class="field-grid">
+          <div>
+            <div class="f-label f-required">담당자 선택</div>
+            <select id="managerName" onchange="onManagerChange(this.value)">
+              <option value="">선택하세요</option>
+              ${managers.map(m=>`<option ${formData.managerName===m?'selected':''}>${m}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <div class="f-label">알림 이메일</div>
+            <input type="email" id="managerEmail" value="${formData.managerEmail}" placeholder="manager@ippeo.co.kr" oninput="formData.managerEmail=this.value">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">알림 설정</div>
+        ${[
+          {lb:'CS 문의 접수 시 알림',   checked:true},
+          {lb:'컴플라이언스 위반 감지', checked:true},
+          {lb:'온보딩 단계 완료 시',     checked:true},
+          {lb:'계약 만료 30일 전',       checked:true},
+        ].map(n=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+          <span style="font-size:13px;color:var(--gray-700)">${n.lb}</span>
+          <label class="toggle-wrap"><input type="checkbox" ${n.checked?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>`).join('')}
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">내부 메모 (선택)</div>
+        <textarea rows="3" id="memo" placeholder="병원 특이사항, 계약 관련 메모 등을 입력하세요..." style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--r);font-size:13px;font-family:inherit;resize:vertical;line-height:1.6;outline:none" oninput="formData.memo=this.value">${formData.memo}</textarea>
+      </div>
+    </div>
+    <div class="reg-card-foot">
+      <button class="btn" onclick="prevStep(3)">← 이전</button>
+      <button class="btn btn-primary" onclick="nextStep(3)">검토 및 등록 →</button>
+    </div>`;
+}
+
+// ── STEP 4: 최종 확인 ──
+function renderStep4() {
+  const planPrices = {Basic:'₩390,000',Pro:'₩890,000',Enterprise:'₩1,490,000'};
+  const planCls = {Pro:'badge-blue',Enterprise:'badge-purple',Basic:'badge-gray'};
+
+  return `
+    <div class="reg-card-head">
+      <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px">✓ STEP 4. 최종 확인 및 등록</div>
+      <div style="font-size:12px;color:var(--gray-400)">입력하신 정보를 확인하고 등록하세요.</div>
+    </div>
+    <div class="reg-card-body">
+      <div class="summary-section">
+        <div class="summary-title">🏥 병원 정보</div>
+        ${[
+          ['병원명 (KR)', formData.nameKr || '—'],
+          ['병원명 (JP)', formData.nameJa || '—'],
+          ['전문 분야', formData.specialty || '—'],
+          ['원장명', formData.directorName || '—'],
+          ['전화', formData.phone || '—'],
+          ['이메일', formData.email || '—'],
+          ['주소', formData.address || '—'],
+        ].map(([l,v])=>`<div class="summary-row"><div class="summary-label">${l}</div><div class="summary-val">${v}</div></div>`).join('')}
+      </div>
+      <div class="summary-section">
+        <div class="summary-title">📄 계약 정보</div>
+        ${[
+          ['플랜', `<span class="badge ${planCls[formData.plan]||'badge-gray'}">${formData.plan}</span>`],
+          ['월 이용료', planPrices[formData.plan] || '—'],
+          ['계약 시작일', formData.contractStart || '—'],
+          ['자동 갱신', formData.autoRenew ? '✓ 설정됨' : '미설정'],
+        ].map(([l,v])=>`<div class="summary-row"><div class="summary-label">${l}</div><div class="summary-val">${v}</div></div>`).join('')}
+      </div>
+      <div class="summary-section">
+        <div class="summary-title">👤 담당자</div>
+        ${[
+          ['담당 매니저', formData.managerName || '—'],
+          ['알림 이메일', formData.managerEmail || (formData.managerName.includes('김운영') ? 'admin@ippeo.co.kr' : formData.managerName.includes('이수진') ? 'ops@ippeo.co.kr' : '—')],
+          ['메모', formData.memo || '없음'],
+        ].map(([l,v])=>`<div class="summary-row"><div class="summary-label">${l}</div><div class="summary-val" style="word-break:break-all">${v}</div></div>`).join('')}
+      </div>
+      <div style="background:var(--teal-l);border:1px solid #99F6E4;border-radius:var(--r);padding:14px 16px;margin-top:4px">
+        <div style="font-size:13px;font-weight:600;color:var(--teal-d);margin-bottom:4px">🚀 등록 후 자동으로 시작되는 작업</div>
+        <div style="font-size:12px;color:var(--teal-d)">병원 정보 AI 자동 분석 → 온보딩 STEP 1 시작 → 담당자에게 시작 알림 발송</div>
+      </div>
+    </div>
+    <div class="reg-card-foot">
+      <button class="btn" onclick="prevStep(4)">← 이전으로</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="saveDraft()">임시 저장</button>
+        <button class="btn btn-navy" onclick="submitHospital()">🏥 병원 등록 완료</button>
+      </div>
+    </div>`;
+}
+
+// ── 완료 화면 ──
+function renderSuccess() {
+  return `
+    <div class="reg-card-body">
+      <div class="success-wrap">
+        <div style="font-size:56px;margin-bottom:16px">🎉</div>
+        <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px">${formData.nameKr || '신규 병원'} 등록 완료!</div>
+        <div style="font-size:14px;color:var(--gray-500);margin-bottom:28px">온보딩이 자동으로 시작되었습니다.</div>
+        <div style="display:inline-flex;flex-direction:column;gap:6px;text-align:left;background:var(--gray-50);border-radius:var(--rl);padding:16px 24px;margin-bottom:28px;min-width:280px">
+          ${['AI 분석 시작 (약 2분 소요)','담당자 알림 발송 완료','온보딩 STEP 1 준비 완료'].map(t=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-700)"><span style="color:var(--teal)">✓</span>${t}</div>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a class="btn btn-primary" href="onboarding_detail.html?id=new">🚀 온보딩 바로 시작</a>
+          <a class="btn" href="hospital_list.html">병원 목록으로</a>
+          <button class="btn" onclick="resetForm()">+ 다른 병원 등록</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── 네비게이션 ──
+function nextStep(from) {
+  if (from === 1) {
+    if (!formData.nameKr) { alert('병원명(한국어)을 입력하세요.'); return; }
+    if (!formData.specialty) { alert('전문 분야를 선택하세요.'); return; }
+    if (!formData.phone) { alert('대표 전화를 입력하세요.'); return; }
+    if (!formData.email) { alert('이메일을 입력하세요.'); return; }
+    if (!isValidEmail(formData.email)) { alert('올바른 이메일 형식으로 입력하세요.'); document.getElementById('email')?.focus(); return; }
+  }
+  if (from === 3) {
+    if (!formData.managerName) { alert('담당자를 선택하세요.'); return; }
+  }
+  currentStep = from + 1;
+  renderAll();
+}
+function prevStep(from) { currentStep = from - 1; renderAll(); }
+
+function selectPlan(id) {
+  formData.plan = id;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('plan-' + id).classList.add('selected');
+}
+
+function renderAll() {
+  renderWizard();
+  const renders = { 1: renderStep1, 2: renderStep2, 3: renderStep3, 4: renderStep4 };
+  document.getElementById('reg-card').innerHTML = renders[currentStep] ? renders[currentStep]() : '';
+}
+
+function isValidEmail(val) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val.trim());
+}
+
+function validateEmail(el, isBlur) {
+  const val = el.value.trim();
+  formData.email = val;
+  const hint = document.getElementById('email-hint');
+  if (!hint) return;
+
+  if (!val) {
+    // 아직 안 입력 — 힌트 없음
+    hint.textContent = '';
+    el.style.borderColor = '';
+    return;
+  }
+  if (!val.includes('@')) {
+    hint.textContent = '@ 문자가 필요합니다';
+    hint.style.color = 'var(--amber)';
+    el.style.borderColor = 'var(--amber)';
+    return;
+  }
+  if (!isValidEmail(val)) {
+    hint.textContent = '올바른 이메일 형식이 아닙니다 (예: name@domain.com)';
+    hint.style.color = 'var(--red)';
+    el.style.borderColor = 'var(--red)';
+    return;
+  }
+  // 유효
+  hint.textContent = '✓ 올바른 이메일 형식입니다';
+  hint.style.color = 'var(--teal-d)';
+  hint.style.fontWeight = '600';
+  el.style.borderColor = 'var(--teal)';
+}
+
+function formatUrl(el) {
+  let val = el.value;
+  // https:// 가 지워지지 않도록 보호
+  if (!val.startsWith('https://') && !val.startsWith('http://')) {
+    val = 'https://' + val.replace(/^https?:\/\//, '');
+    el.value = val;
+  }
+  formData.website = val;
+}
+
+function formatPhone(el) {
+  // 숫자만 추출
+  const digits = el.value.replace(/\D/g, '');
+  let formatted = digits;
+  let hint = '';
+
+  if (digits.startsWith('010') || digits.startsWith('011') || digits.startsWith('016') || digits.startsWith('017') || digits.startsWith('018') || digits.startsWith('019')) {
+    // 휴대폰: 010-XXXX-XXXX (11자리)
+    if (digits.length <= 3) {
+      formatted = digits;
+    } else if (digits.length <= 7) {
+      formatted = digits.slice(0,3) + '-' + digits.slice(3);
+    } else {
+      formatted = digits.slice(0,3) + '-' + digits.slice(3,7) + '-' + digits.slice(7,11);
+    }
+    hint = '📱 휴대폰';
+  } else if (digits.startsWith('02')) {
+    // 서울 일반전화: 02-XXXX-XXXX (10자리) 또는 02-XXX-XXXX (9자리)
+    if (digits.length <= 2) {
+      formatted = digits;
+    } else if (digits.length <= 5) {
+      formatted = digits.slice(0,2) + '-' + digits.slice(2);
+    } else if (digits.length <= 9) {
+      formatted = digits.slice(0,2) + '-' + digits.slice(2,5) + '-' + digits.slice(5);
+    } else {
+      formatted = digits.slice(0,2) + '-' + digits.slice(2,6) + '-' + digits.slice(6,10);
+    }
+    hint = '📞 서울 일반전화';
+  } else if (digits.length > 0) {
+    // 지역번호 3자리: 031, 051 등 — XXX-XXXX-XXXX (11자리)
+    if (digits.length <= 3) {
+      formatted = digits;
+    } else if (digits.length <= 6) {
+      formatted = digits.slice(0,3) + '-' + digits.slice(3);
+    } else if (digits.length <= 9) {
+      formatted = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+    } else {
+      formatted = digits.slice(0,3) + '-' + digits.slice(3,7) + '-' + digits.slice(7,11);
+    }
+    hint = '📞 지역 일반전화';
+  }
+
+  el.value = formatted;
+  formData.phone = formatted;
+
+  const hintEl = document.getElementById('phone-hint');
+  if (hintEl) {
+    hintEl.textContent = hint || '02, 031… 또는 010으로 시작';
+    hintEl.style.color = hint ? 'var(--teal-d)' : '';
+    hintEl.style.fontWeight = hint ? '600' : '';
+  }
+}
+
+const MANAGER_EMAIL_MAP = {
+  '김운영 (슈퍼 어드민)': 'admin@ippeo.co.kr',
+  '이수진 (운영팀)':       'ops@ippeo.co.kr',
+};
+
+function onManagerChange(val) {
+  formData.managerName = val;
+  // 알림 이메일 자동 채우기 (수동 입력 안 한 경우에만)
+  const emailEl = document.getElementById('managerEmail');
+  if (emailEl && !formData.managerEmail) {
+    const autoEmail = MANAGER_EMAIL_MAP[val] || '';
+    emailEl.value = autoEmail;
+    formData.managerEmail = autoEmail;
+  }
+}
+
+// ── 한국어 → 가타카나 변환 엔진 ──
+
+// 1. 사전 매핑 (긴 단어 우선)
+const KR_DICT = {
+  '성형외과':'整形外科', '피부과':'皮膚科', '외과':'外科', '내과':'内科',
+  '안과':'眼科', '치과':'歯科', '한의원':'韓方クリニック',
+  '클리닉':'クリニック', '병원':'病院', '의원':'医院', '센터':'センター',
+  '강남':'カンナム', '청담':'チョンダム', '압구정':'アックジョン',
+  '신사':'シンサ', '논현':'ノンヒョン', '도곡':'ドゴク', '반포':'バンポ',
+  '역삼':'ヨクサム', '서초':'ソチョ', '방배':'バンベ', '사당':'サダン',
+  '이수':'イス', '잠실':'チャムシル', '홍대':'ホンデ', '명동':'ミョンドン',
+  '뷰티':'ビューティ', '미래':'ミレ', '탑':'タップ', '라인':'ライン',
+  '플러스':'プラス', '프리마':'プリマ', '유나이티드':'ユナイテッド',
+  '세라':'セラ', '원':'ウォン', '뷰':'ビュー', '성형':'整形',
+  '눈':'目', '코':'鼻', '피부':'皮膚', '미':'美',
+  // 자주 쓰는 한국어 고유명 직접 매핑
+  '서울':'ソウル', '부산':'プサン', '대구':'テグ', '인천':'インチョン',
+  '광주':'クァンジュ', '대전':'テジョン', '수원':'スウォン',
+  '하나':'ハナ', '미소':'ミソ', '아름':'アルム', '사랑':'サラン',
+  '봄':'ポム', '빛':'ピッ', '꽃':'コッ', '별':'ピョル', '달':'タル',
+  '예쁜':'イェップン', '예스':'イェス', '참':'チャム', '좋은':'ジョウン',
+  '새봄':'セボム', '새벽':'セビョク', '초록':'チョロク', '파란':'パラン',
+  '아이':'アイ', '베이비':'ベイビー', '골든':'ゴールデン', '실버':'シルバー',
+  // 외래어 음역 보정
+  '프리마':'プリマ', '프리미어':'プレミア', '뷰티':'ビューティ', '뷰티풀':'ビューティフル',
+  '스킨':'スキン', '클래식':'クラシック', '모던':'モダン', '네이처':'ネイチャー',
+  '내추럴':'ナチュラル', '오리엔탈':'オリエンタル', '퍼스트':'ファースト',
+  '에스테틱':'エステティック', '에스테':'エステ', '웰니스':'ウェルネス',
+  '헬스':'ヘルス', '메디':'メディ', '메디컬':'メディカル', '닥터':'ドクター',
+  '스마트':'スマート', '디지털':'デジタル', '테크':'テック',
+  '로얄':'ロイヤル', '프리미엄':'プレミアム', '케어':'ケア', '뷰티':'ビューティ',
+};
+
+// 2. 초성·중성·종성 테이블
+const CHO  = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+const JUNG = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+const JONG = ['','g','kk','gs','n','nj','nh','d','l','lg','lm','lb','ls','lt','lp','lh','m','b','bs','s','ss','ng','j','ch','k','t','p','h'];
+
+// 종성 → 다음 초성 연음 처리 (받침 + 모음)
+const JONG_LINK = ['','k','k','ks','n','nj','nh','t','r','rg','rm','rb','rs','rt','rp','rh','m','b','bs','s','ss','ng','j','ch','k','t','p','h'];
+
+function krToRoman(text) {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i) - 0xAC00;
+    if (code < 0 || code > 11171) { result += text[i]; continue; }
+    const cho  = Math.floor(code / 588);
+    const jung = Math.floor((code % 588) / 28);
+    const jong = code % 28;
+
+    // 다음 글자가 한글 모음으로 시작하면 종성 연음
+    const nextCode = i + 1 < text.length ? text.charCodeAt(i+1) - 0xAC00 : -1;
+    const nextCho  = (nextCode >= 0 && nextCode <= 11171) ? Math.floor(nextCode / 588) : -1;
+
+    let choStr  = CHO[cho];
+    let jungStr = JUNG[jung];
+    let jongStr = '';
+
+    if (jong > 0) {
+      // 다음 초성이 없음(ㅇ=11)이고 이전 종성이 있으면 연음
+      if (nextCho === 11 && jong > 0) {
+        jongStr = '';
+        // 다음 글자 초성을 현재 종성으로 대체 — 별도 처리 불필요(다음 루프에서 처리)
+        jongStr = ''; // 연음은 단순화: 종성 그대로 표기
+        jongStr = JONG[jong];
+      } else {
+        jongStr = JONG[jong];
+      }
+    }
+    result += choStr + jungStr + jongStr;
+  }
+  return result;
+}
+
+// 3. 로마자 → 가타카나 변환 테이블
+const ROMAN_TO_KANA = [
+  // 3자 조합
+  ['yeo','ヨ'],['yae','イェ'],['wae','ウェ'],
+  // 2자 조합
+  ['ch','チ'],['ng','ン'],
+  ['ya','ヤ'],['yu','ユ'],['yo','ヨ'],['ye','イェ'],
+  ['wa','ワ'],['wo','ウォ'],['wi','ウィ'],['we','ウェ'],
+  ['ae','エ'],['oe','ウェ'],['ui','ウィ'],['eu','ウ'],['eo','オ'],
+  // ga gi gu ge go
+  ['ga','ガ'],['gi','ギ'],['gu','グ'],['ge','ゲ'],['go','ゴ'],
+  // na ni nu ne no
+  ['na','ナ'],['ni','ニ'],['nu','ヌ'],['ne','ネ'],['no','ノ'],
+  // da di du de do
+  ['da','ダ'],['di','ディ'],['du','ドゥ'],['de','デ'],['do','ド'],
+  // ra ri ru re ro
+  ['ra','ラ'],['ri','リ'],['ru','ル'],['re','レ'],['ro','ロ'],
+  // ma mi mu me mo
+  ['ma','マ'],['mi','ミ'],['mu','ム'],['me','メ'],['mo','モ'],
+  // ba bi bu be bo
+  ['ba','バ'],['bi','ビ'],['bu','ブ'],['be','ベ'],['bo','ボ'],
+  // sa si su se so
+  ['sa','サ'],['si','シ'],['su','ス'],['se','セ'],['so','ソ'],
+  // ja ji ju je jo
+  ['ja','ジャ'],['ji','ジ'],['ju','ジュ'],['je','ジェ'],['jo','ジョ'],
+  // ha hi hu he ho
+  ['ha','ハ'],['hi','ヒ'],['hu','フ'],['he','ヘ'],['ho','ホ'],
+  // pa pi pu pe po
+  ['pa','パ'],['pi','ピ'],['pu','プ'],['pe','ペ'],['po','ポ'],
+  // ka ki ku ke ko
+  ['ka','カ'],['ki','キ'],['ku','ク'],['ke','ケ'],['ko','コ'],
+  // ta ti tu te to
+  ['ta','タ'],['ti','ティ'],['tu','トゥ'],['te','テ'],['to','ト'],
+  // 단모음
+  ['a','ア'],['i','イ'],['u','ウ'],['e','エ'],['o','オ'],
+  // 받침 자음
+  ['kk','ック'],['tt','ット'],['pp','ップ'],['ss','ッス'],
+  ['gs','クス'],['nj','ンジ'],['nh','ン'],['lg','ルク'],['lm','ルム'],
+  ['lb','ルブ'],['ls','ルス'],['lt','ルト'],['lp','ルプ'],['lh','ル'],
+  ['bs','ブス'],
+  ['k','ク'],['n','ン'],['t','ト'],['l','ル'],['r','ル'],['m','ム'],
+  ['b','ブ'],['s','ス'],['j','ジュ'],['h',''],['p','プ'],['g','グ'],['d','ド'],
+];
+
+function romanToKana(roman) {
+  let result = '';
+  let i = 0;
+  const lower = roman.toLowerCase();
+  while (i < lower.length) {
+    let matched = false;
+    // 최대 3자부터 시도
+    for (let len = 3; len >= 1; len--) {
+      const chunk = lower.slice(i, i + len);
+      const found = ROMAN_TO_KANA.find(([r]) => r === chunk);
+      if (found) {
+        result += found[1];
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) { result += lower[i]; i++; }
+  }
+  return result;
+}
+
+// 4. 한국어 → 가타카나 메인 함수
+function krToKana(text) {
+  const roman = krToRoman(text);
+  return romanToKana(roman);
+}
+
+// 5. 전체 변환: 사전 매핑 우선, 나머지 가타카나 음역
+function autoFillJa() {
+  if (formData.nameJaManual) return;
+
+  let input = formData.nameKr;
+  if (!input) {
+    const el = document.getElementById('nameJa');
+    if (el) el.value = '';
+    formData.nameJa = '';
+    return;
+  }
+
+  // 사전 매핑 (긴 단어 우선 치환)
+  const entries = Object.entries(KR_DICT).sort((a,b) => b[0].length - a[0].length);
+
+  // 치환된 위치를 마킹해 가타카나 음역 대상에서 제외
+  // 방법: 치환 토큰 방식
+  let tokens = [{ text: input, converted: false }];
+
+  entries.forEach(([kr, ja]) => {
+    tokens = tokens.flatMap(tok => {
+      if (tok.converted) return [tok];
+      const parts = tok.text.split(kr);
+      if (parts.length === 1) return [tok];
+      const result = [];
+      parts.forEach((p, i) => {
+        if (p) result.push({ text: p, converted: false });
+        if (i < parts.length - 1) result.push({ text: ja, converted: true });
+      });
+      return result;
+    });
+  });
+
+  // 미변환 토큰은 가타카나 음역
+  const ja = tokens.map(tok => tok.converted ? tok.text : krToKana(tok.text)).join('');
+
+  formData.nameJa = ja;
+  const el = document.getElementById('nameJa');
+  if (el) el.value = ja;
+}
+
+function saveDraft() {
+  if (!formData.nameKr) { alert('병원명(한국어)을 먼저 입력하세요.'); return; }
+
+  const drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+  // _draftId를 항상 Number로 통일
+  const draftId = Number(formData._draftId || Date.now());
+  formData._draftId = draftId;
+
+  const entry = {
+    ...formData,
+    _draftId:   draftId,
+    _savedAt:   new Date().toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),
+    _step:      currentStep,
+  };
+
+  // 비교도 Number로 통일
+  const idx = drafts.findIndex(d => Number(d._draftId) === draftId);
+  if (idx > -1) drafts[idx] = entry;
+  else drafts.push(entry);
+
+  sessionStorage.setItem('ippeo_drafts', JSON.stringify(drafts));
+  showDraftToast(formData.nameKr);
+}
+
+function showDraftToast(name) {
+  let toast = document.getElementById('draft-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'draft-toast';
+    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;padding:10px 20px;border-radius:10px;z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:opacity .3s';
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = '💾 <strong>' + name + '</strong> 임시 저장 완료';
+  toast.style.opacity = '1';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+}
+
+function submitHospital() {
+  if (confirm(`${formData.nameKr} 병원을 등록하시겠습니까?`)) {
+    // sessionStorage에 신규 병원 저장
+    const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
+    const existing = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
+    const newHosp = {
+      id: Date.now(),
+      name:       formData.nameKr,
+      nameJa:     formData.nameJa || formData.nameKr,
+      url:        formData.website && formData.website !== 'https://' ? formData.website.replace('https://','') : '(온보딩 중)',
+      plan:       formData.plan || 'Pro',
+      status:     'onboarding',
+      inq:        0,
+      expire:     (() => {
+        const start = formData.contractStart || new Date().toISOString().slice(0,10);
+        const d = new Date(start);
+        d.setFullYear(d.getFullYear() + 1);
+        return d.toISOString().slice(0,10);
+      })(),
+      manager:    (formData.managerName || '').replace(/ \(.*\)/, ''),
+      compliance: 0,
+      visitors:   0,
+      revenue:    0,
+      aeo:        0,
+      lineRate:   0,
+      conv:       0,
+      phone:      formData.phone || '',
+      address:    formData.address || '',
+      specialty:  formData.specialty || '',
+      startDate:  formData.contractStart || new Date().toISOString().slice(0,10),
+      obStep:     1,
+      isNew:      true,
+    };
+    existing.push(newHosp);
+    sessionStorage.setItem('ippeo_new_hospitals', JSON.stringify(existing));
+
+    // 등록 완료 시 해당 임시저장 항목 삭제
+    const _urlDraftId = Number(new URLSearchParams(location.search).get('draft'));
+    const _curDraftId = Number(formData._draftId) || _urlDraftId;
+    const _curNameKr  = formData.nameKr;
+    let _drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+    // id 일치 OR 병원명 일치 OR draft URL 파라미터 일치 → 모두 제거
+    _drafts = _drafts.filter(d =>
+      Number(d._draftId) !== _curDraftId &&
+      Number(d._draftId) !== _urlDraftId &&
+      d.nameKr !== _curNameKr
+    );
+    sessionStorage.setItem('ippeo_drafts', JSON.stringify(_drafts));
+
+    currentStep = 5;
+    renderWizard();
+    document.getElementById('reg-card').innerHTML = renderSuccess();
+  }
+}
+
+function resetForm() {
+  Object.keys(formData).forEach(k => { formData[k] = typeof formData[k] === 'boolean' ? false : ''; });
+  formData.autoRenew = true;
+  formData.plan = 'Pro';
+  formData.contractStart = new Date().toISOString().slice(0, 10);
+  currentStep = 1;
+  renderAll();
+}
+
+// 임시저장 복원 (URL 파라미터 ?draft=ID)
+(function() {
+  const urlDraftId = Number(new URLSearchParams(location.search).get('draft'));
+  if (!urlDraftId) return;
+  const drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+  const saved = drafts.find(d => Number(d._draftId) === Number(urlDraftId));
+  if (!saved) return;
+  Object.assign(formData, saved);
+  currentStep = saved._step || 1;
+  // 복원 배너
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:var(--amber-l);border:1px solid #FCD34D;border-radius:var(--r);padding:10px 16px;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:800px;margin-left:auto;margin-right:auto';
+  banner.innerHTML = '📂 <strong>' + saved.nameKr + '</strong> 임시저장 데이터를 불러왔습니다. (' + saved._savedAt + ')&nbsp;&nbsp;<button onclick="this.parentNode.remove()" style="border:none;background:none;cursor:pointer;color:#92400E;font-size:14px">✕</button>';
+  document.querySelector('.content').prepend(banner);
+})();
+
+// 초기 렌더
+renderAll();
+</script>
+</body>
+</html>

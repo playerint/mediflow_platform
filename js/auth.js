@@ -1,0 +1,55 @@
+
+/**
+ * auth.js — 이뻐 관리자 권한 관리
+ * 권한: super(슈퍼 어드민) | ops(운영팀) | finance(재무팀)
+ *
+ * 메뉴 접근 권한:
+ *   super   — 전체
+ *   ops     — 대시보드·병원관리·온보딩·사이트·CRM·마케팅·CS·설정(본인)
+ *   finance — 대시보드·계약·결제·리포트
+ */
+
+const ROLES = {
+  super:   { label:'슈퍼 어드민', cls:'role-super', menus:'all' },
+  ops:     { label:'운영팀',      cls:'role-ops',   menus:['dashboard','hospitals','onboarding','site','crm','marketing','cs','settings'] },
+  finance: { label:'재무팀',      cls:'role-finance',menus:['dashboard','contract','billing','reports','settings'] },
+};
+
+// 데모용 계정 (실제는 서버 인증)
+const DEMO_ACCOUNTS = [
+  { email:'admin@ippeo.co.kr',    password:'admin1234',  name:'김운영', role:'super'   },
+  { email:'ops@ippeo.co.kr',      password:'ops1234',    name:'이수진', role:'ops'     },
+  { email:'finance@ippeo.co.kr',  password:'finance1234',name:'박재무', role:'finance' },
+];
+
+function getSession() {
+  try { return JSON.parse(sessionStorage.getItem('ippeo_user')); } catch { return null; }
+}
+function setSession(user) {
+  sessionStorage.setItem('ippeo_user', JSON.stringify(user));
+}
+function clearSession() {
+  sessionStorage.removeItem('ippeo_user');
+}
+function requireAuth() {
+  const user = getSession();
+  if (!user) { location.href = getLoginPath(); return null; }
+  return user;
+}
+function getLoginPath() {
+  return location.pathname.includes('/html/') ? '../login.html' : 'login.html';
+}
+function logout() {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    clearSession();
+    location.href = getLoginPath();
+  }
+}
+function canAccess(menuKey) {
+  const user = getSession();
+  if (!user) return false;
+  const role = ROLES[user.role];
+  if (!role) return false;
+  if (role.menus === 'all') return true;
+  return role.menus.includes(menuKey);
+}

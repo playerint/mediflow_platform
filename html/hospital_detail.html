@@ -1,0 +1,492 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>병원 상세 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--gray-200);margin-bottom:20px;}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--gray-400);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab:hover{color:var(--gray-700);}
+.tab.on{color:var(--teal-d);border-bottom-color:var(--teal);font-weight:600;}
+.tab-panel{display:none;}
+.tab-panel.on{display:block;animation:fadeUp .2s ease both;}
+
+.hosp-hero{background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;}
+.hosp-avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--teal) 0%,var(--teal-d) 100%);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.hosp-meta{flex:1;}
+.hosp-name{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.hosp-sub{font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+.info-row{display:flex;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--gray-100);}
+.info-row:last-child{border-bottom:none;}
+.info-label{width:120px;font-size:12px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em;padding-top:2px;flex-shrink:0;}
+.info-val{font-size:13px;color:var(--gray-700);flex:1;}
+
+.step-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--gray-100);}
+.step-item:last-child{border-bottom:none;}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.step-dot.done{background:var(--green-l);color:#065F46;}
+.step-dot.current{background:var(--teal);color:#fff;box-shadow:0 0 0 4px var(--teal-l);}
+.step-dot.wait{background:var(--gray-100);color:var(--gray-400);}
+
+.metric-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-100);}
+.metric-row:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+<div id="sidebar-mount" data-active="hospitals"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <a class="topbar-back" href="hospital_list.html">병원 목록</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title" id="tb-name">병원 상세</span>
+    </div>
+    <div class="topbar-right" id="tb-actions"></div>
+  </div>
+
+  <div class="content fade">
+    <!-- 헤더 -->
+    <div class="hosp-hero" id="hosp-hero"></div>
+
+    <!-- 탭 -->
+    <div class="tab-bar">
+      <div class="tab on"  onclick="switchTab('overview',this)">📋 개요</div>
+      <div class="tab"     onclick="switchTab('onboarding',this)">🚀 온보딩</div>
+      <div class="tab"     onclick="switchTab('site',this)">🌐 사이트</div>
+      <div class="tab"     onclick="switchTab('crm',this)">💬 문의·CRM</div>
+      <div class="tab"     onclick="switchTab('contract',this)">📄 계약·결제</div>
+      <div class="tab"     onclick="switchTab('memo',this)">📝 내부 메모</div>
+    </div>
+
+    <!-- ── 개요 ── -->
+    <div class="tab-panel on" id="tab-overview">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🏥 병원 기본 정보</div>
+            <button class="btn" style="font-size:12px;padding:4px 10px" onclick="alert('정보 편집')">편집</button>
+          </div>
+          <div id="basic-info"></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-head"><div class="card-title">📊 이번 달 성과</div></div>
+            <div id="perf-metrics"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">⚡ 빠른 작업</div></div>
+            <div style="display:flex;flex-direction:column;gap:6px" id="quick-actions"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 온보딩 ── -->
+    <div class="tab-panel" id="tab-onboarding">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🚀 온보딩 진행 현황</div>
+            <span id="ob-badge"></span>
+          </div>
+          <div id="ob-steps"></div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;gap:8px" id="ob-buttons"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📁 업로드된 자산</div></div>
+          <div id="ob-assets"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 사이트 ── -->
+    <div class="tab-panel" id="tab-site">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🌐 사이트 현황</div>
+            <button class="btn btn-primary" style="font-size:12px;padding:4px 10px" onclick="alert('사이트 관리 페이지 이동')">관리 →</button>
+          </div>
+          <div id="site-info"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">⚠ 컴플라이언스 알림</div></div>
+          <div id="compliance-list"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-head"><div class="card-title">📈 Core Web Vitals</div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px" id="cwv-metrics"></div>
+      </div>
+    </div>
+
+    <!-- ── CRM ── -->
+    <div class="tab-panel" id="tab-crm">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="crm-kpi"></div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">💬 최근 문의 내역</div></div>
+        <table class="table">
+          <thead><tr><th>환자명</th><th>채널</th><th>내용</th><th>접수</th><th>상태</th><th></th></tr></thead>
+          <tbody id="crm-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── 계약·결제 ── -->
+    <div class="tab-panel" id="tab-contract">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📄 계약 정보</div>
+            <button class="btn" style="font-size:12px;padding:4px 10px" onclick="alert('계약 수정')">수정</button>
+          </div>
+          <div id="contract-info"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">💳 결제 이력</div></div>
+          <div id="billing-history"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 내부 메모 ── -->
+    <div class="tab-panel" id="tab-memo">
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">📝 담당자 메모</div></div>
+            <div id="memo-list"></div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-100)">
+              <textarea id="new-memo" rows="3" placeholder="새 메모를 입력하세요..." style="width:100%;font-size:13px;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--r);resize:vertical;line-height:1.6;outline:none;font-family:inherit"></textarea>
+              <div style="display:flex;justify-content:flex-end;margin-top:6px">
+                <button class="btn btn-primary" style="font-size:12px" onclick="addMemo()">메모 저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">📋 활동 로그</div></div>
+          <div id="activity-log"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /content -->
+</main>
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+// ── 공유 병원 데이터 (hospital_list.js와 동일) ──
+const HOSPITALS = [
+  {id:1, name:'올래성형외과',    nameJa:'オーレ整形外科',    url:'jp.oleps.co.kr',        plan:'Pro',        status:'active',    inq:23, expire:'2026-11-30', manager:'김운영', compliance:1, visitors:1847, revenue:890000,  aeo:19, lineRate:94, conv:34, phone:'02-555-1234', address:'서울 강남구 논현로 123', specialty:'쌍꺼풀·눈성형', startDate:'2025-05-10', obStep:5},
+  {id:2, name:'강남뷰티클리닉',  nameJa:'カンナムビューティ', url:'jp.kannambeauty.co.kr', plan:'Pro',        status:'active',    inq:18, expire:'2026-09-15', manager:'이수진', compliance:0, visitors:1320, revenue:890000,  aeo:12, lineRate:88, conv:28, phone:'02-555-2345', address:'서울 강남구 도산대로 45', specialty:'피부·레이저', startDate:'2025-04-28', obStep:5},
+  {id:3, name:'청담미래성형외과', nameJa:'チョンダムミレ',    url:'jp.miraeclinic.co.kr',  plan:'Enterprise', status:'active',    inq:31, expire:'2027-03-20', manager:'김운영', compliance:2, visitors:2140, revenue:1490000, aeo:24, lineRate:91, conv:41, phone:'02-555-3456', address:'서울 강남구 청담동 88', specialty:'코·안면윤곽', startDate:'2025-04-15', obStep:5},
+  {id:4, name:'압구정원성형외과', nameJa:'アックジョンウォン', url:'jp.wonclinic.co.kr',    plan:'Basic',      status:'active',    inq:9,  expire:'2026-06-30', manager:'이수진', compliance:0, visitors:780,  revenue:390000,  aeo:7,  lineRate:79, conv:22, phone:'02-555-4567', address:'서울 강남구 압구정로 200', specialty:'가슴·지방흡입', startDate:'2025-03-30', obStep:5},
+  {id:5, name:'신사라인성형외과', nameJa:'シンサライン',      url:'jp.sinsa-line.co.kr',   plan:'Pro',        status:'active',    inq:14, expire:'2026-12-10', manager:'김운영', compliance:1, visitors:1120, revenue:890000,  aeo:11, lineRate:85, conv:31, phone:'02-555-5678', address:'서울 강남구 신사동 55', specialty:'윤곽·턱·이마', startDate:'2025-03-12', obStep:5},
+  {id:6, name:'도곡세라성형외과', nameJa:'ドゴクセラ',         url:'jp.sera-ps.co.kr',      plan:'Pro',        status:'active',    inq:11, expire:'2026-08-25', manager:'이수진', compliance:0, visitors:950,  revenue:890000,  aeo:9,  lineRate:82, conv:27, phone:'02-555-6789', address:'서울 강남구 도곡로 77',   specialty:'쌍꺼풀·리프팅', startDate:'2025-02-20', obStep:5},
+  {id:7, name:'반포미성형외과',   nameJa:'バンポミ',           url:'jp.banpomi.co.kr',      plan:'Basic',      status:'active',    inq:7,  expire:'2026-07-14', manager:'김운영', compliance:0, visitors:620,  revenue:390000,  aeo:5,  lineRate:76, conv:19, phone:'02-555-7890', address:'서울 서초구 반포동 12',   specialty:'눈·리프팅',     startDate:'2025-02-05', obStep:5},
+  {id:8, name:'논현더플러스',     nameJa:'ノンヒョンザプラス', url:'jp.theplus-ps.co.kr',   plan:'Pro',        status:'active',    inq:16, expire:'2027-01-08', manager:'이수진', compliance:0, visitors:1050, revenue:890000,  aeo:14, lineRate:87, conv:33, phone:'02-555-8901', address:'서울 강남구 논현동 88',   specialty:'코·안면윤곽',   startDate:'2025-01-18', obStep:5},
+  {id:9, name:'역삼유나이티드',   nameJa:'ヨクサムユナイテッド',url:'jp.united-ps.co.kr',   plan:'Basic',      status:'active',    inq:5,  expire:'2026-06-05', manager:'김운영', compliance:0, visitors:480,  revenue:390000,  aeo:4,  lineRate:71, conv:17, phone:'02-555-9012', address:'서울 강남구 역삼동 455', specialty:'피부·레이저',   startDate:'2024-12-30', obStep:5},
+  {id:10,name:'이수프리마',       nameJa:'イスプリマ',        url:'(온보딩 중)',            plan:'Pro',        status:'onboarding', inq:0,  expire:'-',          manager:'김운영', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0001', address:'서울 동작구 이수역 3번 출구', specialty:'눈·코 복합', startDate:'2026-05-19', obStep:2},
+  {id:11,name:'사당뷰성형외과',   nameJa:'サダンビュー',      url:'(온보딩 중)',            plan:'Enterprise', status:'onboarding', inq:0,  expire:'-',          manager:'이수진', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0002', address:'서울 동작구 사당동 147', specialty:'안면윤곽·피부', startDate:'2026-05-15', obStep:3},
+  {id:12,name:'방배탑성형외과',   nameJa:'バンベタップ',      url:'(온보딩 중)',            plan:'Basic',      status:'onboarding', inq:0,  expire:'-',          manager:'김운영', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0003', address:'서울 서초구 방배동 32', specialty:'쌍꺼풀 전문', startDate:'2026-05-10', obStep:4},
+];
+
+const OB_STEPS = [
+  {name:'AI 풀 드래프트', desc:'전략·카피·SEO·컴플라이언스 동시 자동 생성'},
+  {name:'크리에이티브',   desc:'템플릿 선택·사진 자산 확정'},
+  {name:'검수 게이트',    desc:'컴플라이언스·일본어 카피 통합 검수'},
+  {name:'연동 & SEO',     desc:'LINE·CRM·AEO 원스텝 설정'},
+  {name:'게시',           desc:'도메인 연결 및 1클릭 배포'},
+];
+
+// URL에서 병원 id 파싱
+// sessionStorage 신규 등록 병원 병합
+(function() {
+  try {
+    const added = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
+    added.forEach(h => { if (!HOSPITALS.find(x => x.id === h.id)) HOSPITALS.push(h); });
+  } catch(e) {}
+})();
+
+const params  = new URLSearchParams(location.search);
+// id가 타임스탬프(신규 등록)일 수 있어 parseInt 대신 그대로 파싱
+const _rawId  = params.get('id');
+const hospId  = _rawId ? (Number(_rawId)) : 1;
+const H = HOSPITALS.find(h => h.id === hospId) || HOSPITALS.find(h => h.id === 1);
+
+// ── 탭 전환 ──
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tab-' + name).classList.add('on');
+}
+
+// ── 헤더 렌더 ──
+function renderHero() {
+  document.getElementById('tb-name').textContent = H.name;
+  const planCls = {Pro:'badge-blue',Enterprise:'badge-purple',Basic:'badge-gray'}[H.plan];
+  const stCls   = H.status === 'active' ? 'badge-green' : 'badge-amber';
+  const stLb    = H.status === 'active' ? '운영 중' : '온보딩';
+
+  document.getElementById('hosp-hero').innerHTML = `
+    <div class="hosp-avatar">🏥</div>
+    <div class="hosp-meta">
+      <div class="hosp-name">
+        ${H.name}
+        <span class="badge ${stCls}">${stLb}</span>
+        <span class="badge ${planCls}">${H.plan}</span>
+      </div>
+      <div class="hosp-sub">
+        <span>${H.nameJa}</span>
+        <span>·</span>
+        <span>${H.specialty}</span>
+        <span>·</span>
+        <span style="font-family:monospace;color:var(--teal)">${H.url}</span>
+        <span>·</span>
+        <span>담당: ${H.manager}</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="onboarding_detail.html?id=${H.id}">🚀 온보딩</a>
+      <button class="btn btn-primary" onclick="alert('${H.name} 사이트 열기')">🌐 사이트 열기</button>
+    </div>`;
+
+  document.getElementById('tb-actions').innerHTML = `
+    <button class="btn btn-danger" onclick="alert('일시정지 처리')">⏸ 일시정지</button>
+    <button class="btn" onclick="alert('설정 편집')">⚙ 설정</button>`;
+}
+
+// ── 개요 탭 ──
+function renderOverview() {
+  const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
+  document.getElementById('basic-info').innerHTML = [
+    ['병원명 (KR)', H.name],
+    ['병원명 (JP)', H.nameJa],
+    ['전문 분야', H.specialty],
+    ['전화번호', H.phone],
+    ['주소', H.address],
+    ['담당 매니저', H.manager],
+    ['입점일', H.startDate],
+    ['계약 플랜', `<span class="badge ${{Pro:'badge-blue',Enterprise:'badge-purple',Basic:'badge-gray'}[H.plan]}">${H.plan} · ₩${planPrices[H.plan].toLocaleString()}/월</span>`],
+    ['계약 만료', (H.expire && H.expire !== '-') ? `<span style="${new Date(H.expire) < new Date(Date.now()+30*86400000) ? 'color:var(--red);font-weight:600' : ''}">${H.expire}</span>` : (H.status === 'onboarding' ? '온보딩 중 (계약 후 자동 설정)' : '-')],
+  ].map(([l,v])=>`<div class="info-row"><div class="info-label">${l}</div><div class="info-val">${v}</div></div>`).join('');
+
+  document.getElementById('perf-metrics').innerHTML = [
+    ['방문자', H.visitors.toLocaleString()+'명', 'blue'],
+    ['이번 달 문의', H.inq+'건', 'teal'],
+    ['전환율', H.conv+'%', H.conv > 30 ? 'green' : 'amber'],
+    ['AEO 인용', H.aeo+'회', 'purple'],
+    ['LINE 해결률', H.lineRate+'%', H.lineRate > 85 ? 'green' : 'amber'],
+    ['이번 달 매출', '₩'+H.revenue.toLocaleString(), 'green'],
+  ].map(([l,v,c])=>`<div class="metric-row">
+    <span style="font-size:13px;color:var(--gray-600)">${l}</span>
+    <span style="font-size:14px;font-weight:700;color:var(--${c})">${v}</span>
+  </div>`).join('');
+
+  document.getElementById('quick-actions').innerHTML = [
+    {lb:'🚀 온보딩 이어서 진행', href:`onboarding_detail.html?id=${H.id}`, cls:''},
+    {lb:'💬 문의·CRM 보기', href:'crm_management.html', cls:''},
+    {lb:'📊 리포트 생성', href:'reports.html', cls:'btn-navy'},
+    {lb:'📄 계약서 다운로드', href:'#', cls:'', click:"alert('계약서 PDF 다운로드')"},
+  ].map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''}>${a.lb}</a>`).join('');
+}
+
+// ── 온보딩 탭 ──
+function renderOnboarding() {
+  const step = H.obStep; // 현재까지 완료된 단계 (1~5)
+  const isDone = H.status === 'active';
+  const pct = Math.round(step / 5 * 100);
+
+  document.getElementById('ob-badge').innerHTML = isDone
+    ? '<span class="badge badge-green">완료</span>'
+    : `<span class="badge badge-amber">진행 중 · ${step}/5</span>`;
+
+  const stepsHtml = OB_STEPS.map((s, i) => {
+    const n = i + 1;
+    const cls = n < step ? 'done' : n === step ? 'current' : 'wait';
+    const icon = n < step ? '✓' : n;
+    const doneDate = n < step ? `<div style="font-size:12px;color:var(--gray-400);margin-top:2px">완료</div>` : n === step ? `<div style="font-size:12px;color:var(--teal);margin-top:2px;font-weight:600">진행 중</div>` : '';
+    return `<div class="step-item">
+      <div class="step-dot ${cls}">${icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:${n<=step?'600':'400'};color:${n<=step?'var(--navy)':'var(--gray-400)'}">${s.name}</div>
+        <div style="font-size:12px;color:var(--gray-400);margin-top:2px">${s.desc}</div>
+        ${doneDate}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('ob-steps').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--gray-100)">
+      <div style="flex:1;height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden">
+        <div style="height:100%;background:var(--teal);width:${pct}%;border-radius:3px;transition:width .3s"></div>
+      </div>
+      <span style="font-size:13px;font-weight:700;color:var(--teal)">${pct}%</span>
+    </div>
+    ${stepsHtml}`;
+
+  document.getElementById('ob-buttons').innerHTML = isDone
+    ? '<span style="font-size:12px;color:var(--gray-400)">✓ 온보딩이 완료되었습니다</span>'
+    : `<button class="btn" onclick="alert('이전 단계로')">← 이전</button>
+       <a class="btn btn-primary" href="onboarding_detail.html?id=${H.id}">이어서 진행 →</a>`;
+
+  document.getElementById('ob-assets').innerHTML = [
+    {name:'병원 로고 (PNG)', size:'284KB', date:'5/12', status:'완료'},
+    {name:'의료진 프로필 사진', size:'1.2MB', date:'5/13', status:'완료'},
+    {name:'시술 B/A 사진 (12장)', size:'8.4MB', date:'5/14', status:'완료'},
+    {name:'원장 인터뷰 영상', size:'—', date:'—', status:H.obStep >= 4 ? '완료' : '대기'},
+    {name:'시설 사진 (6장)', size:'3.1MB', date:'5/15', status:H.obStep >= 4 ? '완료' : '대기'},
+  ].map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-100)">
+    <span style="font-size:18px">📄</span>
+    <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--gray-900)">${f.name}</div><div style="font-size:12px;color:var(--gray-400)">${f.size} · ${f.date}</div></div>
+    <span class="badge ${f.status==='완료'?'badge-green':'badge-gray'}">${f.status}</span>
+  </div>`).join('');
+}
+
+// ── 사이트 탭 ──
+function renderSite() {
+  document.getElementById('site-info').innerHTML = [
+    ['사이트 URL', `<a style="color:var(--teal);font-family:monospace" href="#" onclick="alert('사이트 열기')">${H.url}</a>`],
+    ['게시 상태', H.status === 'active' ? '<span class="badge badge-green">게시 중</span>' : '<span class="badge badge-amber">준비 중</span>'],
+    ['마지막 업데이트', H.status === 'active' ? '2026-05-21 14:23' : '—'],
+    ['도메인', H.url],
+    ['SSL', '<span class="badge badge-green">✓ 유효</span>'],
+    ['검색 엔진 색인', H.status === 'active' ? '<span class="badge badge-green">활성</span>' : '<span class="badge badge-gray">비활성</span>'],
+  ].map(([l,v])=>`<div class="info-row"><div class="info-label">${l}</div><div class="info-val">${v}</div></div>`).join('');
+
+  const compItems = H.compliance > 0
+    ? Array.from({length:H.compliance}, (_, i) => ({
+        msg: i === 0 ? '치료 전·후 비교 사진 표시 위반 (일본 의료법 §6-5)' : '가격 표시 없는 시술 광고',
+        sev: i === 0 ? 'red' : 'amber'
+      }))
+    : [];
+
+  document.getElementById('compliance-list').innerHTML = compItems.length === 0
+    ? '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px">✓ 컴플라이언스 위반 없음</div>'
+    : compItems.map(c=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--${c.sev}-l);border-radius:var(--r);margin-bottom:8px">
+        <span style="font-size:16px">${c.sev==='red'?'🚨':'⚠️'}</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--gray-900)">${c.msg}</div></div>
+        <button class="btn btn-danger" style="font-size:12px;padding:3px 8px" onclick="alert('위반 처리')">처리</button>
+      </div>`).join('');
+
+  document.getElementById('cwv-metrics').innerHTML = [
+    {label:'LCP', val:'1.8s', grade:'good'},
+    {label:'FID', val:'12ms', grade:'good'},
+    {label:'CLS', val:'0.05', grade:'good'},
+    {label:'종합 점수', val:'98', grade:'good'},
+  ].map(m=>`<div style="background:var(--green-l);border-radius:var(--r);padding:14px;text-align:center">
+    <div style="font-size:12px;font-weight:600;color:#065F46;margin-bottom:4px">${m.label}</div>
+    <div style="font-size:22px;font-weight:700;color:#065F46">${m.val}</div>
+  </div>`).join('');
+}
+
+// ── CRM 탭 ──
+function renderCrm() {
+  document.getElementById('crm-kpi').innerHTML = [
+    {label:'이번 달 문의', val:H.inq+'건', cl:'teal'},
+    {label:'전환율', val:H.conv+'%', cl:'green'},
+    {label:'LINE 해결률', val:H.lineRate+'%', cl:'blue'},
+  ].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.cl})">
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
+    <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
+  </div>`).join('');
+
+  const inquiries = [
+    {name:'야마다 사오리', ch:'LINE',  msg:'二重整形について詳しく教えてください', time:'2시간 전', status:'미확인'},
+    {name:'스즈키 미카',   ch:'LINE',  msg:'鼻整形の費用と回復期間は？', time:'5시간 전', status:'상담중'},
+    {name:'사토 하루카',   ch:'상담폼', msg:'初回カウンセリングの予約をしたいです', time:'어제',    status:'완료'},
+    {name:'다나카 유이',   ch:'LINE',  msg:'目の下のクマ治療について', time:'5/19',   status:'완료'},
+    {name:'이토 나나',     ch:'LINE',  msg:'モニター募集はありますか？', time:'5/18',   status:'완료'},
+  ];
+  document.getElementById('crm-tbody').innerHTML = inquiries.map(q=>`<tr>
+    <td style="font-weight:500">${q.name}</td>
+    <td><span class="badge ${q.ch==='LINE'?'badge-green':'badge-blue'}">${q.ch}</span></td>
+    <td style="font-size:12px;color:var(--gray-500);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.msg}</td>
+    <td style="font-size:12px;color:var(--gray-400)">${q.time}</td>
+    <td><span class="badge ${q.status==='미확인'?'badge-red':q.status==='상담중'?'badge-amber':'badge-gray'}">${q.status}</span></td>
+    <td><button class="btn" style="font-size:12px;padding:3px 8px" onclick="alert('답변하기')">답변</button></td>
+  </tr>`).join('');
+}
+
+// ── 계약·결제 탭 ──
+function renderContract() {
+  const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
+  document.getElementById('contract-info').innerHTML = [
+    ['플랜', `<span class="badge ${{Pro:'badge-blue',Enterprise:'badge-purple',Basic:'badge-gray'}[H.plan]}">${H.plan}</span>`],
+    ['월 이용료', `₩${planPrices[H.plan].toLocaleString()}`],
+    ['계약 시작', H.startDate],
+    ['계약 만료', (H.expire && H.expire !== '-') ? H.expire : (H.status === 'onboarding' ? '온보딩 중 (계약 후 자동 설정)' : '-')],
+    ['자동 갱신', '<span class="badge badge-green">설정됨</span>'],
+    ['결제 방법', '자동이체 (신한은행)'],
+  ].map(([l,v])=>`<div class="info-row"><div class="info-label">${l}</div><div class="info-val">${v}</div></div>`).join('');
+
+  const months = ['2026-05','2026-04','2026-03','2026-02','2026-01'];
+  document.getElementById('billing-history').innerHTML = months.map((m, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--gray-900)">${m} 이용료</div>
+        <div style="font-size:12px;color:var(--gray-400)">${m}-01 청구</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:600">₩${planPrices[H.plan].toLocaleString()}</div>
+        <span class="badge ${i===0?'badge-green':'badge-gray'}" style="font-size:10px">${i===0?'납부완료':'완료'}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── 메모 탭 ──
+let memos = [
+  {author:'김운영', date:'5/20', text:'원장님이 6월 캠페인 강화 요청. 눈성형 키워드 AEO 비중 높여달라고 함.'},
+  {author:'이수진', date:'5/18', text:'LINE 봇 응답률 95% 목표 → 현재 94%. 다음 점검 5/25.'},
+];
+function renderMemo() {
+  document.getElementById('memo-list').innerHTML = memos.map(m=>`
+    <div style="background:var(--amber-l);border:1px solid #FCD34D;border-radius:var(--r);padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:600;color:#92400E">${m.author}</span>
+        <span style="font-size:10px;color:#B45309">${m.date}</span>
+      </div>
+      <div style="font-size:13px;color:#78350F;line-height:1.6">${m.text}</div>
+    </div>`).join('');
+
+  document.getElementById('activity-log').innerHTML = [
+    {icon:'📝', text:'메모 추가 (김운영)', time:'5/20'},
+    {icon:'🚀', text:'온보딩 STEP 5 완료', time:'5/10'},
+    {icon:'🌐', text:'사이트 게시 완료', time:'5/10'},
+    {icon:'📄', text:'계약 등록 (Pro 플랜)', time:H.startDate},
+    {icon:'🏥', text:'병원 등록 완료', time:H.startDate},
+  ].map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+    <span style="font-size:16px">${a.icon}</span>
+    <div style="flex:1;font-size:12px;color:var(--gray-700)">${a.text}</div>
+    <span style="font-size:12px;color:var(--gray-400)">${a.time}</span>
+  </div>`).join('');
+}
+function addMemo() {
+  const txt = document.getElementById('new-memo').value.trim();
+  if (!txt) return;
+  const user = (typeof getSession === 'function' && getSession()) ? getSession().name : '관리자';
+  memos.unshift({author: user, date: '지금', text: txt});
+  document.getElementById('new-memo').value = '';
+  renderMemo();
+}
+
+// ── 초기 렌더 ──
+renderHero();
+renderOverview();
+renderOnboarding();
+renderSite();
+renderCrm();
+renderContract();
+renderMemo();
+</script>
+</body>
+</html>

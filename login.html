@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>로그인 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/common.css">
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0F1E3C 0%,#1a3360 50%,#0F2A50 100%);}
+.login-wrap{width:100%;max-width:400px;padding:20px;}
+.login-card{background:#fff;border-radius:20px;padding:40px 36px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo .mark{font-size:32px;font-weight:800;color:#0F1E3C;letter-spacing:.04em;}
+.login-logo .mark span{color:#0D9488;}
+.login-logo .sub{font-size:12px;color:#9CA3AF;margin-top:4px;letter-spacing:.1em;text-transform:uppercase;}
+.login-title{font-size:18px;font-weight:700;color:#0F1E3C;margin-bottom:6px;}
+.login-sub{font-size:13px;color:#6B7280;margin-bottom:24px;}
+.field{margin-bottom:14px;}
+.f-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
+.f-input{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:#111827;background:#fff;transition:border .15s;}
+.f-input:focus{border-color:#0D9488;box-shadow:0 0 0 3px rgba(13,148,136,.1);}
+.login-btn{width:100%;padding:12px;background:#0D9488;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;margin-top:4px;}
+.login-btn:hover{background:#0F766E;}
+.login-error{font-size:12px;color:#DC2626;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:none;}
+.demo-accounts{margin-top:20px;padding-top:16px;border-top:1px solid #F3F4F6;}
+.demo-title{font-size:12px;color:#9CA3AF;margin-bottom:8px;text-align:center;}
+.demo-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#F9FAFB;border-radius:8px;margin-bottom:5px;cursor:pointer;transition:background .1s;}
+.demo-item:hover{background:#F0FDF4;}
+.demo-item:last-child{margin-bottom:0;}
+.demo-role{font-size:12px;font-weight:600;}
+.demo-email{font-size:12px;color:#6B7280;font-family:monospace;}
+.demo-arrow{font-size:12px;color:#9CA3AF;}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="mark">ipp<span>eo</span></div>
+      <div class="sub">Admin Platform</div>
+    </div>
+    <div class="login-title">관리자 로그인</div>
+    <div class="login-sub">이뻐 운영팀 전용 내부 시스템입니다.</div>
+    <div class="login-error" id="login-error">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+    <div class="field">
+      <div class="f-label">이메일</div>
+      <input class="f-input" type="email" id="email" placeholder="admin@ippeo.co.kr" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <div class="field">
+      <div class="f-label">비밀번호</div>
+      <input class="f-input" type="password" id="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="login-btn" onclick="login()">로그인</button>
+
+    <div class="demo-accounts">
+      <div class="demo-title">데모 계정으로 빠르게 시작</div>
+      <div class="demo-item" onclick="fillDemo('admin@ippeo.co.kr','admin1234')">
+        <span class="role-super demo-role">슈퍼 어드민</span>
+        <span class="demo-email">admin@ippeo.co.kr</span>
+        <span class="demo-arrow">→</span>
+      </div>
+      <div class="demo-item" onclick="fillDemo('ops@ippeo.co.kr','ops1234')">
+        <span class="role-ops demo-role">운영팀</span>
+        <span class="demo-email">ops@ippeo.co.kr</span>
+        <span class="demo-arrow">→</span>
+      </div>
+      <div class="demo-item" onclick="fillDemo('finance@ippeo.co.kr','finance1234')">
+        <span class="role-finance demo-role">재무팀</span>
+        <span class="demo-email">finance@ippeo.co.kr</span>
+        <span class="demo-arrow">→</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/auth.js"></script>
+<script>
+// 이미 로그인 상태면 대시보드로
+if (getSession()) location.href = 'index.html';
+
+function fillDemo(email, pw) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = pw;
+  login();
+}
+
+function login() {
+  var email = document.getElementById('email').value.trim();
+  var pw    = document.getElementById('password').value;
+  var err   = document.getElementById('login-error');
+  err.style.display = 'none';
+
+  var account = DEMO_ACCOUNTS.find(function(a){ return a.email === email && a.password === pw; });
+  if (!account) {
+    err.style.display = 'block';
+    return;
+  }
+  setSession({ name: account.name, email: account.email, role: account.role });
+  location.href = 'index.html';
+}
+</script>
+</body>
+</html>

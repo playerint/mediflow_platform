@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>리포트 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/reports.css">
+</head>
+<body>
+<div id="sidebar-mount" data-active="reports"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">리포트</span>
+    </div>
+    <div class="topbar-right">
+      <select style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--gray-200);background:#fff">
+        <option>2026년 5월</option><option>2026년 4월</option><option>2026년 3월</option>
+      </select>
+      <button class="btn btn-primary" onclick="alert('전체 병원 통합 PDF 생성')">PDF 생성</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="kpi-grid" id="report-kpi"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">📈 병원별 방문자 비교</div></div>
+        <div style="position:relative;width:100%;height:200px">
+          <canvas id="visitorChart" role="img" aria-label="병원별 방문자 비교">병원별 방문자 비교.</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">💰 병원별 매출 기여</div></div>
+        <div style="position:relative;width:100%;height:200px">
+          <canvas id="revenueChart" role="img" aria-label="병원별 매출 기여">병원별 매출 기여.</canvas>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">🏥 병원별 종합 성과표</div></div>
+      <table class="table">
+        <thead><tr><th>병원명</th><th>방문자</th><th>문의</th><th>전환율</th><th>AEO 인용</th><th>LINE 해결률</th><th>매출</th><th>리포트</th></tr></thead>
+        <tbody id="report-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/reports_list.js"></script>
+</body>
+</html>

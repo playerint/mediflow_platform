@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>계약 관리 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/contract.css">
+</head>
+<body>
+<div id="sidebar-mount" data-active="contract"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">계약 관리</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" onclick="alert('새 계약 등록')">+ 계약 등록</button>
+    </div>
+  </div>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px" id="contract-kpi"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>병원명</th>
+            <th>플랜</th>
+            <th>월 금액</th>
+            <th>계약 시작</th>
+            <th>계약 만료</th>
+            <th>자동 갱신</th>
+            <th>상태</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="contract-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/contract_list.js"></script>
+</body>
+</html>

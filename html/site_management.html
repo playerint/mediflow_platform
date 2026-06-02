@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>사이트 관리 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/site_mgmt.css">
+</head>
+<body>
+<div id="sidebar-mount" data-active="site"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">사이트 관리</span>
+    </div>
+    <div class="topbar-right">
+      <div class="filter-pills" style="margin:0">
+        <button class="pill on" onclick="setFilter('all',this)">전체 12</button>
+        <button class="pill" onclick="setFilter('live',this)">게시 중 9</button>
+        <button class="pill" onclick="setFilter('violation',this)">위반 3</button>
+        <button class="pill" onclick="setFilter('pending',this)">검수 대기 2</button>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px" id="site-kpi"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>병원명</th>
+            <th>사이트 URL</th>
+            <th>게시 상태</th>
+            <th>컴플라이언스</th>
+            <th>마지막 게시</th>
+            <th>Core Web Vitals</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="site-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/site_mgmt.js"></script>
+</body>
+</html>

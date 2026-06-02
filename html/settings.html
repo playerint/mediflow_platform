@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>설정 — ippeo Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<link rel="stylesheet" href="../css/settings.css">
+</head>
+<body>
+<div id="sidebar-mount" data-active="settings"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">설정</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" onclick="alert('저장됨')">💾 저장</button>
+    </div>
+  </div>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:200px 1fr;gap:16px">
+      <div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;height:fit-content;position:sticky;top:72px">
+        <div class="sn-item active" onclick="showSec('profile',this)"><span>👤</span> 내 프로필</div>
+        <div class="sn-item" onclick="showSec('team',this)"><span>👥</span> 팀 계정 관리</div>
+        <div class="sn-item" onclick="showSec('roles',this)"><span>🔐</span> 권한 설정</div>
+        <div class="sn-item" onclick="showSec('notification',this)"><span>🔔</span> 알림 설정</div>
+        <div class="sn-item" onclick="showSec('system',this)"><span>⚙</span> 시스템 설정</div>
+      </div>
+      <div id="sec-content"></div>
+    </div>
+  </div>
+</main>
+<style>
+.sn-item{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;color:var(--gray-500);cursor:pointer;border-bottom:1px solid var(--gray-100);transition:background .1s;}
+.sn-item:last-child{border-bottom:none;}
+.sn-item:hover{background:var(--gray-50);color:var(--gray-700);}
+.sn-item.active{background:var(--teal-l);color:var(--teal-d);font-weight:500;}
+</style>
+
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/settings_ippeo.js"></script>
+</body>
+</html>
