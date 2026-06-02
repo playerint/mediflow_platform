@@ -757,8 +757,36 @@ function showDraftToast(name) {
 }
 
 function submitHospital() {
-  openModal('병원 등록', `<strong>${formData.nameKr}</strong> 병원을 등록하시겠습니까?`, function() {
-    // sessionStorage에 신규 병원 저장
+  const isEdit = !!formData._editId;
+  const modalTitle = isEdit ? '병원 정보 수정' : '병원 등록';
+  const modalMsg   = isEdit
+    ? `<strong>${formData.nameKr}</strong> 병원 정보를 저장하시겠습니까?`
+    : `<strong>${formData.nameKr}</strong> 병원을 등록하시겠습니까?`;
+  const btnLabel = isEdit ? '저장' : '등록';
+
+  openModal(modalTitle, modalMsg, function() {
+    if (isEdit) {
+      // 편집 모드: sessionStorage의 편집 스냅샷 업데이트
+      try {
+        const snap = JSON.parse(sessionStorage.getItem('ippeo_edit_hospital') || '{}');
+        Object.assign(snap, {
+          name:      formData.nameKr,
+          nameJa:    formData.nameJa || formData.nameKr,
+          url:       formData.website && formData.website !== 'https://' ? formData.website.replace('https://','') : snap.url || '(온보딩 중)',
+          plan:      formData.plan || snap.plan || 'Pro',
+          manager:   (formData.managerName || snap.manager || '').replace(/ \(.*\)/, ''),
+          phone:     formData.phone    || snap.phone    || '',
+          address:   formData.address  || snap.address  || '',
+          specialty: formData.specialty|| snap.specialty|| '',
+        });
+        sessionStorage.setItem('ippeo_edit_hospital', JSON.stringify(snap));
+      } catch(e) {}
+      showToast('✓ 병원 정보가 수정되었습니다.', 'success');
+      setTimeout(function() { location.href = 'hospital_detail.html?id=' + formData._editId; }, 1200);
+      return;
+    }
+
+    // 신규 등록 모드
     const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
     const existing = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
     const newHosp = {
@@ -809,7 +837,7 @@ function submitHospital() {
     currentStep = 5;
     renderWizard();
     document.getElementById('reg-card').innerHTML = renderSuccess();
-  }, '등록', 'btn-primary');
+  }, btnLabel, 'btn-primary');
 }
 
 function resetForm() {
@@ -834,6 +862,49 @@ function resetForm() {
   const banner = document.createElement('div');
   banner.style.cssText = 'background:var(--amber-l);border:1px solid #FCD34D;border-radius:var(--r);padding:10px 16px;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:800px;margin-left:auto;margin-right:auto';
   banner.innerHTML = '📂 <strong>' + saved.nameKr + '</strong> 임시저장 데이터를 불러왔습니다. (' + saved._savedAt + ')&nbsp;&nbsp;<button onclick="this.parentNode.remove()" style="border:none;background:none;cursor:pointer;color:#92400E;font-size:14px">✕</button>';
+  document.querySelector('.content').prepend(banner);
+})();
+
+// 편집 모드 복원 (URL 파라미터 ?edit=ID)
+(function() {
+  const editId = Number(new URLSearchParams(location.search).get('edit'));
+  if (!editId) return;
+
+  // sessionStorage에서 편집 대상 병원 데이터 로드
+  let H = null;
+  try { H = JSON.parse(sessionStorage.getItem('ippeo_edit_hospital')); } catch(e) {}
+
+  // sessionStorage에 없으면 HOSPITALS 배열에서 직접 찾기
+  if (!H || H.id !== editId) {
+    if (typeof HOSPITALS !== 'undefined') {
+      H = HOSPITALS.find(h => h.id === editId);
+    }
+  }
+  if (!H) return;
+
+  // formData에 기존 병원 정보 매핑
+  Object.assign(formData, {
+    _editId:      H.id,
+    nameKr:       H.name      || '',
+    nameJa:       H.nameJa    || '',
+    specialty:    H.specialty || '',
+    phone:        H.phone     || '',
+    email:        H.email     || '',
+    address:      H.address   || '',
+    website:      H.url && !H.url.includes('온보딩') ? 'https://' + H.url : '',
+    plan:         H.plan      || 'Pro',
+    managerName:  H.manager   || '',
+    contractStart:H.startDate || new Date().toISOString().slice(0,10),
+  });
+
+  // 타이틀 변경
+  var titleEl = document.querySelector('.topbar-title');
+  if (titleEl) titleEl.textContent = '병원 정보 수정';
+
+  // 편집 안내 배너
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:var(--navy-l);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:800px;margin-left:auto;margin-right:auto';
+  banner.innerHTML = '✏ <strong>' + H.name + '</strong> 병원 정보를 수정합니다.&nbsp;&nbsp;<button onclick="this.parentNode.remove()" style="border:none;background:none;cursor:pointer;color:var(--navy);font-size:14px">✕</button>';
   document.querySelector('.content').prepend(banner);
 })();
 
