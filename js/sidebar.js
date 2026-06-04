@@ -84,7 +84,7 @@
     if (!mount) return;
     var active = mount.getAttribute('data-active') || 'dashboard';
 
-    var user = (typeof getSession === 'function') ? getSession() : { name:'김운영', role:'super' };
+    var user = (typeof getSessionOrDefault === 'function') ? getSessionOrDefault() : { name:'김운영', role:'super' };
     if (!user) user = { name:'김운영', role:'super' };
 
     var aside = document.createElement('aside');

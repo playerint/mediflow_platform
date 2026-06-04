@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════
+   MEDIFLOW Platform — dashboard.css
+   대시보드 전용 스타일 (common.css 보완)
+═══════════════════════════════════════════════════════════ */
+
+/* ── Chart.js 캔버스 ── */
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── 대시보드 섹션 제목 ── */
+.dash-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--s400);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 10px;
+}
+
+/* ── Urgent 리스트 아이템 ── */
+#urgent-list > div:last-child {
+  border-bottom: none !important;
+}
+
+/* ── 온보딩 리스트 아이템 ── */
+#onboarding-list > div:last-child {
+  border-bottom: none !important;
+}
+
+/* ── CRM 리스트 아이템 ── */
+#crm-list > div:last-child {
+  border-bottom: none !important;
+}
+
+/* ── 계약 갱신 리스트 아이템 ── */
+#contract-list > div:last-child {
+  border-bottom: none !important;
+}
+
+/* ── 최근 병원 리스트 아이템 ── */
+#hospital-list > div:last-child {
+  border-bottom: none !important;
+}
+
+/* ── KPI 큰 숫자 ── */
+.kpi-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--s400);
+  font-size: 13px;
+}

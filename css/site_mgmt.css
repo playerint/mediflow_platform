@@ -1,0 +1,71 @@
+/* ═══════════════════════════════════════════════════════════
+   MEDIFLOW Platform — site_mgmt.css
+   사이트 관리 전용 스타일
+═══════════════════════════════════════════════════════════ */
+
+/* ── 사이트 테이블 행 클릭 커서 ── */
+#site-tbody tr {
+  cursor: pointer;
+}
+
+/* ── URL 셀 ── */
+.site-url {
+  font-size: 12px;
+  font-family: 'DM Mono', 'Consolas', monospace;
+  color: var(--navy);
+}
+
+/* ── Core Web Vitals 점수 ── */
+.cwv-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cwv-good    { color: var(--green); }
+.cwv-needs   { color: #D97706; }
+.cwv-poor    { color: var(--red); }
+
+/* ── 컴플라이언스 위반 강조 ── */
+.compliance-ok       { }
+.compliance-warning  { color: #D97706; font-weight: 500; }
+.compliance-error    { color: var(--red); font-weight: 600; }
+
+/* ── 사이트 KPI 미니카드 ── */
+#site-kpi > div {
+  transition: box-shadow .15s;
+}
+#site-kpi > div:hover {
+  box-shadow: 0 3px 10px rgba(0,0,0,.07);
+}
+
+/* ── 빈 상태 ── */
+.site-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--s400);
+  font-size: 13px;
+}
+
+/* ── 게시 상태 토글 ── */
+.publish-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* ── 사이트 미리보기 썸네일 ── */
+.site-thumb {
+  width: 40px; height: 28px;
+  border-radius: 4px;
+  background: var(--s100);
+  border: 1px solid var(--s200);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.site-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}

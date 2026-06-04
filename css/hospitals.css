@@ -1,0 +1,151 @@
+/* ═══════════════════════════════════════════════════════════
+   MEDIFLOW Platform — hospitals.css
+   병원 목록 / 상세 / 신규 등록 전용 스타일
+═══════════════════════════════════════════════════════════ */
+
+/* ── 병원 테이블 행 클릭 커서 ── */
+#hospital-table tbody tr {
+  cursor: pointer;
+}
+
+/* ── 병원명 셀 ── */
+.hosp-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hosp-name-kr {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--s900);
+}
+.hosp-name-ja {
+  font-size: 11px;
+  color: var(--s400);
+}
+
+/* ── 사이트 URL ── */
+.hosp-url {
+  font-size: 12px;
+  font-family: 'DM Mono', 'Consolas', monospace;
+  color: var(--navy);
+}
+
+/* ── 계약 만료 임박 강조 ── */
+.expire-soon {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* ── 신규 등록 위자드 ── */
+.wizard-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.wz-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  min-width: 130px;
+}
+.wz-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  height: 2px;
+  background: var(--s200);
+}
+.wz-step.done:not(:last-child)::after { background: var(--navy); }
+.wz-bubble {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  border: 2px solid var(--s200);
+  background: #fff; color: var(--s400);
+  transition: all .2s;
+}
+.wz-step.done .wz-bubble    { background: var(--navy); border-color: var(--navy); color: #fff; }
+.wz-step.current .wz-bubble { background: var(--navy); border-color: var(--navy); color: #fff; box-shadow: 0 0 0 4px rgba(13,27,62,.12); }
+.wz-label { font-size: 12px; color: var(--s400); }
+.wz-step.done .wz-label     { color: var(--navy); font-weight: 500; }
+.wz-step.current .wz-label  { color: var(--navy); font-weight: 600; }
+
+/* ── 등록 카드 ── */
+.reg-card {
+  background: #fff;
+  border: 1px solid var(--s200);
+  border-radius: var(--rl);
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.reg-card-head {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--s100);
+  background: linear-gradient(90deg, rgba(13,27,62,.03), transparent);
+}
+.reg-card-body { padding: 28px; }
+.reg-card-foot {
+  padding: 16px 28px;
+  border-top: 1px solid var(--s100);
+  background: var(--s50);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ── 폼 필드 그룹 ── */
+.field-group { margin-bottom: 20px; }
+.field-group-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--s500);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--s100);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+label.fld {
+  font-size: 12px; font-weight: 600;
+  color: var(--s700);
+  display: block;
+  margin-bottom: 5px;
+}
+label.fld .req { color: var(--red); margin-left: 2px; }
+
+/* ── 플랜 선택 카드 ── */
+.plan-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.plan-card {
+  border: 2px solid var(--s200);
+  border-radius: var(--rl);
+  padding: 18px;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.plan-card:hover { border-color: var(--s400); }
+.plan-card.selected { border-color: var(--navy); background: var(--navy-l); }
+.plan-card.selected::after {
+  content: '✓';
+  position: absolute; top: 10px; right: 12px;
+  font-size: 14px; font-weight: 700; color: var(--navy);
+}
+.plan-name  { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.plan-price { font-size: 20px; font-weight: 800; color: var(--s900); margin-bottom: 8px; }
+.plan-price span { font-size: 12px; font-weight: 400; color: var(--s400); }
+.plan-feature { font-size: 12px; color: var(--s500); line-height: 1.8; }
+
+/* ── 임시저장 배너 ── */
+#draft-banner { animation: fadeUp .2s ease both; }
+
+/* ── 요약 KPI 미니카드 ── */
+#summary-kpi > div { transition: box-shadow .15s; }
+#summary-kpi > div:hover { box-shadow: 0 3px 10px rgba(0,0,0,.07); }

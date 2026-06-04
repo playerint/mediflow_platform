@@ -25,7 +25,7 @@ const DEMO_ACCOUNTS = [
 var DEFAULT_SESSION = { email:'admin@ippeo.co.kr', name:'김운영', role:'super' };
 
 function getSession() {
-  try { return JSON.parse(sessionStorage.getItem('ippeo_user')) || DEFAULT_SESSION; } catch { return DEFAULT_SESSION; }
+  try { return JSON.parse(sessionStorage.getItem('ippeo_user')) || null; } catch { return null; }
 }
 function setSession(user) {
   sessionStorage.setItem('ippeo_user', JSON.stringify(user));
@@ -37,6 +37,9 @@ function requireAuth() {
   const user = getSession();
   if (!user) { location.href = getLoginPath(); return null; }
   return user;
+}
+function getSessionOrDefault() {
+  return getSession() || DEFAULT_SESSION;
 }
 function getLoginPath() {
   return location.pathname.includes('/html/') ? '../login.html' : 'login.html';

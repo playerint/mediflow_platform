@@ -589,6 +589,36 @@ textarea { resize: vertical; line-height: 1.6; }
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: var(--s200); border-radius: 3px; }
 
+/* ═══════════════════════════════════════
+   ROLE BADGES — 사이드바 + 로그인
+═══════════════════════════════════════ */
+.role-super {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px;
+  background: rgba(37,99,235,.18);
+  color: #93C5FD;
+}
+.role-ops {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px;
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.65);
+}
+.role-finance {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px;
+  background: rgba(22,163,74,.18);
+  color: #86EFAC;
+}
+
+/* 로그인 화면 데모 아이템용 (밝은 배경) */
+.demo-role.role-super  { background: var(--blue-b);  color: var(--blue);  }
+.demo-role.role-ops    { background: var(--s100);     color: var(--s700);  }
+.demo-role.role-finance{ background: #D1FAE5;          color: #065F46;      }
+
 .site-footer {
   text-align: center;
   padding: 20px 24px;
