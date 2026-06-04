@@ -185,26 +185,30 @@
 <script>
 // ── 공유 병원 데이터 (hospital_list.js와 동일) ──
 const HOSPITALS = [
-  {id:1, name:'올래성형외과',    nameJa:'オーレ整形外科',    url:'jp.oleps.co.kr',        plan:'Pro',        status:'active',    inq:23, expire:'2026-11-30', manager:'김운영', compliance:1, visitors:1847, revenue:890000,  aeo:19, lineRate:94, conv:34, phone:'02-555-1234', address:'서울 강남구 논현로 123', specialty:'쌍꺼풀·눈성형', startDate:'2025-05-10', obStep:5},
-  {id:2, name:'강남뷰티클리닉',  nameJa:'カンナムビューティ', url:'jp.kannambeauty.co.kr', plan:'Pro',        status:'active',    inq:18, expire:'2026-09-15', manager:'이수진', compliance:0, visitors:1320, revenue:890000,  aeo:12, lineRate:88, conv:28, phone:'02-555-2345', address:'서울 강남구 도산대로 45', specialty:'피부·레이저', startDate:'2025-04-28', obStep:5},
-  {id:3, name:'청담미래성형외과', nameJa:'チョンダムミレ',    url:'jp.miraeclinic.co.kr',  plan:'Enterprise', status:'active',    inq:31, expire:'2027-03-20', manager:'김운영', compliance:2, visitors:2140, revenue:1490000, aeo:24, lineRate:91, conv:41, phone:'02-555-3456', address:'서울 강남구 청담동 88', specialty:'코·안면윤곽', startDate:'2025-04-15', obStep:5},
-  {id:4, name:'압구정원성형외과', nameJa:'アックジョンウォン', url:'jp.wonclinic.co.kr',    plan:'Basic',      status:'active',    inq:9,  expire:'2026-06-30', manager:'이수진', compliance:0, visitors:780,  revenue:390000,  aeo:7,  lineRate:79, conv:22, phone:'02-555-4567', address:'서울 강남구 압구정로 200', specialty:'가슴·지방흡입', startDate:'2025-03-30', obStep:5},
-  {id:5, name:'신사라인성형외과', nameJa:'シンサライン',      url:'jp.sinsa-line.co.kr',   plan:'Pro',        status:'active',    inq:14, expire:'2026-12-10', manager:'김운영', compliance:1, visitors:1120, revenue:890000,  aeo:11, lineRate:85, conv:31, phone:'02-555-5678', address:'서울 강남구 신사동 55', specialty:'윤곽·턱·이마', startDate:'2025-03-12', obStep:5},
-  {id:6, name:'도곡세라성형외과', nameJa:'ドゴクセラ',         url:'jp.sera-ps.co.kr',      plan:'Pro',        status:'active',    inq:11, expire:'2026-08-25', manager:'이수진', compliance:0, visitors:950,  revenue:890000,  aeo:9,  lineRate:82, conv:27, phone:'02-555-6789', address:'서울 강남구 도곡로 77',   specialty:'쌍꺼풀·리프팅', startDate:'2025-02-20', obStep:5},
-  {id:7, name:'반포미성형외과',   nameJa:'バンポミ',           url:'jp.banpomi.co.kr',      plan:'Basic',      status:'active',    inq:7,  expire:'2026-07-14', manager:'김운영', compliance:0, visitors:620,  revenue:390000,  aeo:5,  lineRate:76, conv:19, phone:'02-555-7890', address:'서울 서초구 반포동 12',   specialty:'눈·리프팅',     startDate:'2025-02-05', obStep:5},
-  {id:8, name:'논현더플러스',     nameJa:'ノンヒョンザプラス', url:'jp.theplus-ps.co.kr',   plan:'Pro',        status:'active',    inq:16, expire:'2027-01-08', manager:'이수진', compliance:0, visitors:1050, revenue:890000,  aeo:14, lineRate:87, conv:33, phone:'02-555-8901', address:'서울 강남구 논현동 88',   specialty:'코·안면윤곽',   startDate:'2025-01-18', obStep:5},
-  {id:9, name:'역삼유나이티드',   nameJa:'ヨクサムユナイテッド',url:'jp.united-ps.co.kr',   plan:'Basic',      status:'active',    inq:5,  expire:'2026-06-05', manager:'김운영', compliance:0, visitors:480,  revenue:390000,  aeo:4,  lineRate:71, conv:17, phone:'02-555-9012', address:'서울 강남구 역삼동 455', specialty:'피부·레이저',   startDate:'2024-12-30', obStep:5},
+  {id:1, name:'올래성형외과',    nameJa:'オーレ整形外科',    url:'jp.oleps.co.kr',        plan:'Pro',        status:'active',    inq:23, expire:'2026-11-30', manager:'김운영', compliance:1, visitors:1847, revenue:890000,  aeo:19, lineRate:94, conv:34, phone:'02-555-1234', address:'서울 강남구 논현로 123', specialty:'쌍꺼풀·눈성형', startDate:'2025-05-10', obStep:9},
+  {id:2, name:'강남뷰티클리닉',  nameJa:'カンナムビューティ', url:'jp.kannambeauty.co.kr', plan:'Pro',        status:'active',    inq:18, expire:'2026-09-15', manager:'이수진', compliance:0, visitors:1320, revenue:890000,  aeo:12, lineRate:88, conv:28, phone:'02-555-2345', address:'서울 강남구 도산대로 45', specialty:'피부·레이저', startDate:'2025-04-28', obStep:9},
+  {id:3, name:'청담미래성형외과', nameJa:'チョンダムミレ',    url:'jp.miraeclinic.co.kr',  plan:'Enterprise', status:'active',    inq:31, expire:'2027-03-20', manager:'김운영', compliance:2, visitors:2140, revenue:1490000, aeo:24, lineRate:91, conv:41, phone:'02-555-3456', address:'서울 강남구 청담동 88', specialty:'코·안면윤곽', startDate:'2025-04-15', obStep:9},
+  {id:4, name:'압구정원성형외과', nameJa:'アックジョンウォン', url:'jp.wonclinic.co.kr',    plan:'Basic',      status:'active',    inq:9,  expire:'2026-06-30', manager:'이수진', compliance:0, visitors:780,  revenue:390000,  aeo:7,  lineRate:79, conv:22, phone:'02-555-4567', address:'서울 강남구 압구정로 200', specialty:'가슴·지방흡입', startDate:'2025-03-30', obStep:9},
+  {id:5, name:'신사라인성형외과', nameJa:'シンサライン',      url:'jp.sinsa-line.co.kr',   plan:'Pro',        status:'active',    inq:14, expire:'2026-12-10', manager:'김운영', compliance:1, visitors:1120, revenue:890000,  aeo:11, lineRate:85, conv:31, phone:'02-555-5678', address:'서울 강남구 신사동 55', specialty:'윤곽·턱·이마', startDate:'2025-03-12', obStep:9},
+  {id:6, name:'도곡세라성형외과', nameJa:'ドゴクセラ',         url:'jp.sera-ps.co.kr',      plan:'Pro',        status:'active',    inq:11, expire:'2026-08-25', manager:'이수진', compliance:0, visitors:950,  revenue:890000,  aeo:9,  lineRate:82, conv:27, phone:'02-555-6789', address:'서울 강남구 도곡로 77',   specialty:'쌍꺼풀·리프팅', startDate:'2025-02-20', obStep:9},
+  {id:7, name:'반포미성형외과',   nameJa:'バンポミ',           url:'jp.banpomi.co.kr',      plan:'Basic',      status:'active',    inq:7,  expire:'2026-07-14', manager:'김운영', compliance:0, visitors:620,  revenue:390000,  aeo:5,  lineRate:76, conv:19, phone:'02-555-7890', address:'서울 서초구 반포동 12',   specialty:'눈·리프팅',     startDate:'2025-02-05', obStep:9},
+  {id:8, name:'논현더플러스',     nameJa:'ノンヒョンザプラス', url:'jp.theplus-ps.co.kr',   plan:'Pro',        status:'active',    inq:16, expire:'2027-01-08', manager:'이수진', compliance:0, visitors:1050, revenue:890000,  aeo:14, lineRate:87, conv:33, phone:'02-555-8901', address:'서울 강남구 논현동 88',   specialty:'코·안면윤곽',   startDate:'2025-01-18', obStep:9},
+  {id:9, name:'역삼유나이티드',   nameJa:'ヨクサムユナイテッド',url:'jp.united-ps.co.kr',   plan:'Basic',      status:'active',    inq:5,  expire:'2026-06-05', manager:'김운영', compliance:0, visitors:480,  revenue:390000,  aeo:4,  lineRate:71, conv:17, phone:'02-555-9012', address:'서울 강남구 역삼동 455', specialty:'피부·레이저',   startDate:'2024-12-30', obStep:9},
   {id:10,name:'이수프리마',       nameJa:'イスプリマ',        url:'(온보딩 중)',            plan:'Pro',        status:'onboarding', inq:0,  expire:'-',          manager:'김운영', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0001', address:'서울 동작구 이수역 3번 출구', specialty:'눈·코 복합', startDate:'2026-05-19', obStep:2},
-  {id:11,name:'사당뷰성형외과',   nameJa:'サダンビュー',      url:'(온보딩 중)',            plan:'Enterprise', status:'onboarding', inq:0,  expire:'-',          manager:'이수진', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0002', address:'서울 동작구 사당동 147', specialty:'안면윤곽·피부', startDate:'2026-05-15', obStep:3},
-  {id:12,name:'방배탑성형외과',   nameJa:'バンベタップ',      url:'(온보딩 중)',            plan:'Basic',      status:'onboarding', inq:0,  expire:'-',          manager:'김운영', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0003', address:'서울 서초구 방배동 32', specialty:'쌍꺼풀 전문', startDate:'2026-05-10', obStep:4},
+  {id:11,name:'사당뷰성형외과',   nameJa:'サダンビュー',      url:'(온보딩 중)',            plan:'Enterprise', status:'onboarding', inq:0,  expire:'-',          manager:'이수진', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0002', address:'서울 동작구 사당동 147', specialty:'안면윤곽·피부', startDate:'2026-05-15', obStep:5},
+  {id:12,name:'방배탑성형외과',   nameJa:'バンベタップ',      url:'(온보딩 중)',            plan:'Basic',      status:'onboarding', inq:0,  expire:'-',          manager:'김운영', compliance:0, visitors:0,    revenue:0,       aeo:0,  lineRate:0,  conv:0,  phone:'02-555-0003', address:'서울 서초구 방배동 32', specialty:'쌍꺼풀 전문', startDate:'2026-05-10', obStep:7},
 ];
 
 const OB_STEPS = [
-  {name:'AI 풀 드래프트', desc:'전략·카피·SEO·컴플라이언스 동시 자동 생성'},
-  {name:'크리에이티브',   desc:'템플릿 선택·사진 자산 확정'},
-  {name:'검수 게이트',    desc:'컴플라이언스·일본어 카피 통합 검수'},
-  {name:'연동 & SEO',     desc:'LINE·CRM·AEO 원스텝 설정'},
-  {name:'게시',           desc:'도메인 연결 및 1클릭 배포'},
+  {name:'자동 분석',    desc:'URL 크롤링 · 시술·의료진·자산 자동 추출'},
+  {name:'전략 산출',    desc:'AI 기획안 · SEO 키워드 · Hero 카피 생성'},
+  {name:'디자인',       desc:'템플릿 선택 · 사이트 섹션 구조 확정'},
+  {name:'자산',         desc:'B/A·의료진·시설 사진 업로드'},
+  {name:'카피 검수',    desc:'일본어 재집필 확인 · 수정'},
+  {name:'컴플라이언스', desc:'일본 의료광고법 5종 자동 검사'},
+  {name:'퍼널 연결',    desc:'고정 LINE CTA · IPPEO 통계 연동 · 팔로잉'},
+  {name:'SEO·AEO',      desc:'검색 최적화 · AI 인용 구조 설정'},
+  {name:'미리보기·게시',desc:'최종 확인 · 도메인 연결 · 배포'},
 ];
 
 // URL에서 병원 id 파싱
@@ -302,23 +306,29 @@ function renderOverview() {
 
 // ── 온보딩 탭 ──
 function renderOnboarding() {
-  const step = H.obStep; // 현재까지 완료된 단계 (1~5)
+  const step = H.obStep; // 현재까지 완료된 단계 (1~9)
   const isDone = H.status === 'active';
-  const pct = Math.round(step / 5 * 100);
+  const pct = Math.round(step / 9 * 100);
 
   document.getElementById('ob-badge').innerHTML = isDone
     ? '<span class="badge badge-green">완료</span>'
-    : `<span class="badge badge-amber">진행 중 · ${step}/5</span>`;
+    : `<span class="badge badge-amber">진행 중 · ${step}/9</span>`;
 
   const stepsHtml = OB_STEPS.map((s, i) => {
     const n = i + 1;
-    const cls = n < step ? 'done' : n === step ? 'current' : 'wait';
-    const icon = n < step ? '✓' : n;
-    const doneDate = n < step ? `<div style="font-size:12px;color:var(--gray-400);margin-top:2px">완료</div>` : n === step ? `<div style="font-size:12px;color:var(--teal);margin-top:2px;font-weight:600">진행 중</div>` : '';
+    const cls  = isDone ? 'done' : (n < step ? 'done' : n === step ? 'current' : 'wait');
+    const icon = isDone ? '✓'    : (n < step ? '✓' : n);
+    const doneDate = isDone
+      ? `<div style="font-size:12px;color:var(--gray-400);margin-top:2px">완료</div>`
+      : (n < step
+          ? `<div style="font-size:12px;color:var(--gray-400);margin-top:2px">완료</div>`
+          : n === step
+            ? `<div style="font-size:12px;color:var(--teal);margin-top:2px;font-weight:600">진행 중</div>`
+            : '');
     return `<div class="step-item">
       <div class="step-dot ${cls}">${icon}</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:${n<=step?'600':'400'};color:${n<=step?'var(--navy)':'var(--gray-400)'}">${s.name}</div>
+        <div style="font-size:13px;font-weight:${(isDone||n<=step)?'600':'400'};color:${(isDone||n<=step)?'var(--navy)':'var(--gray-400)'}">${s.name}</div>
         <div style="font-size:12px;color:var(--gray-400);margin-top:2px">${s.desc}</div>
         ${doneDate}
       </div>
@@ -403,7 +413,7 @@ function renderCrm() {
   const inquiries = [
     {name:'야마다 사오리', ch:'LINE',  msg:'二重整形について詳しく教えてください', time:'2시간 전', status:'미확인'},
     {name:'스즈키 미카',   ch:'LINE',  msg:'鼻整形の費用と回復期間は？', time:'5시간 전', status:'상담중'},
-    {name:'사토 하루카',   ch:'상담폼', msg:'初回カウンセリングの予約をしたいです', time:'어제',    status:'완료'},
+    {name:'사토 하루카',   ch:'Instagram', msg:'初回カウンセリングの予約をしたいです', time:'어제',    status:'완료'},
     {name:'다나카 유이',   ch:'LINE',  msg:'目の下のクマ治療について', time:'5/19',   status:'완료'},
     {name:'이토 나나',     ch:'LINE',  msg:'モニター募集はありますか？', time:'5/18',   status:'완료'},
   ];
@@ -460,7 +470,7 @@ function renderMemo() {
 
   document.getElementById('activity-log').innerHTML = [
     {icon:'📝', text:'메모 추가 (김운영)', time:'5/20'},
-    {icon:'🚀', text:'온보딩 STEP 5 완료', time:'5/10'},
+    {icon:'🚀', text:'온보딩 STEP 9 완료', time:'5/10'},
     {icon:'🌐', text:'사이트 게시 완료', time:'5/10'},
     {icon:'📄', text:'계약 등록 (Pro 플랜)', time:H.startDate},
     {icon:'🏥', text:'병원 등록 완료', time:H.startDate},

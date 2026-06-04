@@ -14,11 +14,11 @@ const HOSPITALS = [
   {id:12,name:'방배탑성형외과',  nameJa:'バンベタップ',      url:'(온보딩 중)',           plan:'Basic',     status:'onboarding',inq:0, expire:'-',          manager:'김운영',compliance:0,visitors:0,   revenue:0,      aeo:0, lineRate:0, conv:0},
 ];
 
-const OB_STEPS = ['AI 드래프트','크리에이티브','검수 게이트','연동 & SEO','게시'];
+const OB_STEPS = ['자동 분석','전략 산출','디자인','자산','카피 검수','컴플라이언스','퍼널 연결','SEO·AEO','미리보기·게시'];
 const OB_DETAILS = [
   {id:10, step:2, started:'5/19', days:2},
-  {id:11, step:3, started:'5/15', days:6},
-  {id:12, step:4, started:'5/10', days:11},
+  {id:11, step:5, started:'5/15', days:6},
+  {id:12, step:7, started:'5/10', days:11},
 ];
 const DONE_HOSPITALS = [
   {name:'올래성형외과',    completed:'5/10', days:4},
@@ -46,7 +46,7 @@ obKpi.innerHTML = [
 const obActive = document.getElementById('ob-active');
 OB_DETAILS.forEach(ob => {
   const h = HOSPITALS.find(x=>x.id===ob.id);
-  const pct = Math.round(ob.step/5*100);
+  const pct = Math.round(ob.step/9*100);
   obActive.innerHTML += `<div class="card fade" style="margin-bottom:10px;cursor:pointer" onclick="location.href='onboarding_detail.html?id=${ob.id}'">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div><div style="font-size:13px;font-weight:600;color:var(--navy)">${h.name}</div><div style="font-size:12px;color:var(--gray-400)">${h.nameJa} · ${h.plan} · ${h.manager}</div></div>
@@ -56,12 +56,12 @@ OB_DETAILS.forEach(ob => {
       <div style="flex:1;height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--teal);width:${pct}%"></div></div>
       <span style="font-size:12px;color:var(--gray-400)">${pct}%</span>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px">
       ${OB_STEPS.map((s,i)=>`<div style="text-align:center">
-        <div style="width:24px;height:24px;border-radius:50%;background:${i<ob.step?'var(--teal)':i===ob.step-1?'var(--teal)':'var(--gray-200)'};color:${i<ob.step?'#fff':'#9CA3AF'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;margin:0 auto">${i+1}</div>
-        <div style="font-size:9px;color:${i<ob.step?'var(--teal)':'var(--gray-400)'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s}</div>
+        <div style="width:20px;height:20px;border-radius:50%;background:${i<ob.step?'var(--teal)':i===ob.step-1?'var(--teal)':'var(--gray-200)'};color:${i<ob.step?'#fff':'#9CA3AF'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin:0 auto">${i+1}</div>
       </div>`).join('')}
     </div>
+    <div style="font-size:10px;color:var(--gray-500);margin-top:4px">STEP ${ob.step}/9 · ${OB_STEPS[ob.step-1]}</div>
     <div style="display:flex;justify-content:space-between;margin-top:10px">
       <span style="font-size:12px;color:var(--gray-400)">시작: ${ob.started} · ${ob.days}일 경과</span>
       <button class="btn btn-primary" style="font-size:12px;padding:4px 12px" onclick="event.stopPropagation();location.href='onboarding_detail.html?id=${ob.id}'">이어서 진행 →</button>
