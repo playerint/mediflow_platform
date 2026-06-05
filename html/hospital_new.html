@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>신규 병원 등록 — ippeo Admin</title>
+<title>신규 병원 등록 — MEDIFLOW Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/common.css">
@@ -45,6 +45,15 @@
 .plan-price{font-size:20px;font-weight:700;color:var(--teal);margin-bottom:8px;}
 .plan-feature{font-size:12px;color:var(--gray-500);padding:2px 0;display:flex;align-items:center;gap:4px;}
 
+/* ── 진료과 유형 카드 ── */
+.clinic-type-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px;}
+.clinic-type-card{border:2px solid var(--gray-200);border-radius:var(--r);padding:14px 12px;cursor:pointer;transition:all .15s;text-align:center;}
+.clinic-type-card:hover{border-color:var(--gray-400);background:var(--gray-50);}
+.clinic-type-card.selected{border-color:var(--navy);background:rgba(15,30,60,.04);}
+.ct-icon{font-size:26px;margin-bottom:6px;}
+.ct-name{font-size:13px;font-weight:700;color:var(--navy);}
+.ct-sub{font-size:11px;color:var(--gray-400);margin-top:2px;}
+
 /* ── 확인 요약 ── */
 .summary-section{margin-bottom:16px;}
 .summary-title{font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
@@ -74,7 +83,7 @@
     </div>
   </div>
 
-  <div class="content fade" style="max-width:900px">
+  <div class="content fade" style="max-width:900px;margin:0 auto">
 
     <!-- 위자드 스텝 -->
     <div class="wizard-bar" id="wizard-bar"></div>
@@ -87,11 +96,13 @@
 
 <script src="../js/auth.js"></script>
 <script src="../js/sidebar.js"></script>
+<script src="../js/config.js"></script>
 <script>
 // 폼 데이터 저장소
+
 const formData = {
   // STEP 1 — 기본 정보
-  nameKr: '', nameJa: '', specialty: '', subSpecialty: '',
+  nameKr: '', nameJa: '', clinicType: '', specialty: '', subSpecialty: '',
   phone: '', email: '', address: '', website: '',
   directorName: '', directorTitle: '',
   // STEP 2 — 플랜
@@ -147,17 +158,29 @@ function renderStep1() {
       </div>
       <div class="field-group">
         <div class="field-group-title">진료 정보</div>
-        <div class="field-grid">
-          <div>
-            <div class="f-label f-required">주 전문 분야</div>
-            <select id="specialty" onchange="formData.specialty=this.value">
-              <option value="">선택하세요</option>
-              ${['쌍꺼풀·눈성형','코성형','안면윤곽','가슴성형','지방흡입','피부·레이저','눈·코 복합','기타'].map(s=>`<option ${formData.specialty===s?'selected':''}>${s}</option>`).join('')}
-            </select>
-          </div>
-          <div>
-            <div class="f-label">세부 전문 시술</div>
-            <input type="text" id="subSpecialty" value="${formData.subSpecialty}" placeholder="쌍꺼풀, 눈매교정, 코끝 등" oninput="formData.subSpecialty=this.value">
+        <div class="f-label f-required" style="margin-bottom:8px">진료과 유형</div>
+        <div class="clinic-type-cards">
+          ${CLINIC_TYPES.map(t=>`
+            <div class="clinic-type-card ${formData.clinicType===t.id?'selected':''}" onclick="selectClinicType('${t.id}')">
+              <div class="ct-icon">${t.icon}</div>
+              <div class="ct-name">${t.id}</div>
+              <div class="ct-sub">${t.sub}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div id="specialty-wrap" style="${formData.clinicType?'':'display:none'}">
+          <div class="field-grid">
+            <div>
+              <div class="f-label f-required">주 전문 분야</div>
+              <select id="specialty" onchange="formData.specialty=this.value">
+                <option value="">선택하세요</option>
+                ${((CLINIC_TYPES.find(t=>t.id===formData.clinicType)||{}).specialties||[]).map(s=>`<option ${formData.specialty===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <div class="f-label">세부 전문 시술</div>
+              <input type="text" id="subSpecialty" value="${formData.subSpecialty}" placeholder="세부 시술명 입력 (예: 쌍꺼풀, 눈매교정)" oninput="formData.subSpecialty=this.value">
+            </div>
           </div>
         </div>
       </div>
@@ -203,6 +226,26 @@ function renderStep1() {
       <span style="font-size:12px;color:var(--gray-400)">* 표시는 필수 입력 항목입니다</span>
       <button class="btn btn-primary" onclick="nextStep(1)">다음 단계 →</button>
     </div>`;
+}
+
+function selectClinicType(type) {
+  formData.clinicType = type;
+  formData.specialty = '';  // 유형이 바뀌면 분야 초기화
+
+  // 카드 선택 표시
+  document.querySelectorAll('.clinic-type-card').forEach(el => {
+    el.classList.toggle('selected', el.textContent.includes(type));
+  });
+
+  // specialty-wrap 표시 + 드롭다운 옵션 교체
+  const wrap = document.getElementById('specialty-wrap');
+  const sel  = document.getElementById('specialty');
+  if (!wrap || !sel) return;
+
+  wrap.style.display = '';
+  const ct = CLINIC_TYPES.find(t => t.id === type);
+  sel.innerHTML = '<option value="">선택하세요</option>'
+    + (ct ? ct.specialties : []).map(s => `<option>${s}</option>`).join('');
 }
 
 // ── STEP 2: 플랜 선택 ──
@@ -287,7 +330,7 @@ function renderStep3() {
           </div>
           <div>
             <div class="f-label">알림 이메일</div>
-            <input type="email" id="managerEmail" value="${formData.managerEmail}" placeholder="manager@ippeo.co.kr" oninput="formData.managerEmail=this.value">
+            <input type="email" id="managerEmail" value="${formData.managerEmail}" placeholder="manager@MEDIFLOW.co.kr" oninput="formData.managerEmail=this.value">
           </div>
         </div>
       </div>
@@ -330,6 +373,7 @@ function renderStep4() {
         ${[
           ['병원명 (KR)', formData.nameKr || '—'],
           ['병원명 (JP)', formData.nameJa || '—'],
+          ['진료과 유형', formData.clinicType || '—'],
           ['전문 분야', formData.specialty || '—'],
           ['원장명', formData.directorName || '—'],
           ['전화', formData.phone || '—'],
@@ -350,7 +394,7 @@ function renderStep4() {
         <div class="summary-title">👤 담당자</div>
         ${[
           ['담당 매니저', formData.managerName || '—'],
-          ['알림 이메일', formData.managerEmail || (formData.managerName.includes('김운영') ? 'admin@ippeo.co.kr' : formData.managerName.includes('이수진') ? 'ops@ippeo.co.kr' : '—')],
+          ['알림 이메일', formData.managerEmail || (formData.managerName.includes('김운영') ? 'admin@MEDIFLOW.co.kr' : formData.managerName.includes('이수진') ? 'ops@MEDIFLOW.co.kr' : '—')],
           ['메모', formData.memo || '없음'],
         ].map(([l,v])=>`<div class="summary-row"><div class="summary-label">${l}</div><div class="summary-val" style="word-break:break-all">${v}</div></div>`).join('')}
       </div>
@@ -392,7 +436,8 @@ function renderSuccess() {
 function nextStep(from) {
   if (from === 1) {
     if (!formData.nameKr) { showToast('병원명(한국어)을 입력하세요.', 'error'); return; }
-    if (!formData.specialty) { showToast('전문 분야를 선택하세요.', 'error'); return; }
+    if (!formData.clinicType) { showToast('진료과 유형을 선택하세요.', 'error'); return; }
+    if (!formData.specialty) { showToast('주 전문 분야를 선택하세요.', 'error'); return; }
     if (!formData.phone) { showToast('대표 전화를 입력하세요.', 'error'); return; }
     if (!formData.email) { showToast('이메일을 입력하세요.', 'error'); return; }
     if (!isValidEmail(formData.email)) { showToast('올바른 이메일 형식으로 입력하세요.', 'error'); document.getElementById('email')?.focus(); return; }
@@ -516,8 +561,8 @@ function formatPhone(el) {
 }
 
 const MANAGER_EMAIL_MAP = {
-  '김운영 (슈퍼 어드민)': 'admin@ippeo.co.kr',
-  '이수진 (운영팀)':       'ops@ippeo.co.kr',
+  '김운영 (슈퍼 어드민)': 'admin@MEDIFLOW.co.kr',
+  '이수진 (운영팀)':       'ops@MEDIFLOW.co.kr',
 };
 
 function onManagerChange(val) {
@@ -721,7 +766,7 @@ function autoFillJa() {
 function saveDraft() {
   if (!formData.nameKr) { showToast('병원명(한국어)을 먼저 입력하세요.', 'error'); return; }
 
-  const drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+  const drafts = JSON.parse(sessionStorage.getItem('MEDIFLOW_drafts') || '[]');
   // _draftId를 항상 Number로 통일
   const draftId = Number(formData._draftId || Date.now());
   formData._draftId = draftId;
@@ -738,7 +783,7 @@ function saveDraft() {
   if (idx > -1) drafts[idx] = entry;
   else drafts.push(entry);
 
-  sessionStorage.setItem('ippeo_drafts', JSON.stringify(drafts));
+  sessionStorage.setItem('MEDIFLOW_drafts', JSON.stringify(drafts));
   showDraftToast(formData.nameKr);
 }
 
@@ -768,7 +813,7 @@ function submitHospital() {
     if (isEdit) {
       // 편집 모드: sessionStorage의 편집 스냅샷 업데이트
       try {
-        const snap = JSON.parse(sessionStorage.getItem('ippeo_edit_hospital') || '{}');
+        const snap = JSON.parse(sessionStorage.getItem('MEDIFLOW_edit_hospital') || '{}');
         Object.assign(snap, {
           name:      formData.nameKr,
           nameJa:    formData.nameJa || formData.nameKr,
@@ -779,7 +824,7 @@ function submitHospital() {
           address:   formData.address  || snap.address  || '',
           specialty: formData.specialty|| snap.specialty|| '',
         });
-        sessionStorage.setItem('ippeo_edit_hospital', JSON.stringify(snap));
+        sessionStorage.setItem('MEDIFLOW_edit_hospital', JSON.stringify(snap));
       } catch(e) {}
       showToast('✓ 병원 정보가 수정되었습니다.', 'success');
       setTimeout(function() { location.href = 'hospital_detail.html?id=' + formData._editId; }, 1200);
@@ -788,7 +833,7 @@ function submitHospital() {
 
     // 신규 등록 모드
     const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
-    const existing = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
+    const existing = JSON.parse(sessionStorage.getItem('MEDIFLOW_new_hospitals') || '[]');
     const newHosp = {
       id: Date.now(),
       name:       formData.nameKr,
@@ -818,21 +863,21 @@ function submitHospital() {
       isNew:      true,
     };
     existing.push(newHosp);
-    sessionStorage.setItem('ippeo_new_hospitals', JSON.stringify(existing));
+    sessionStorage.setItem('MEDIFLOW_new_hospitals', JSON.stringify(existing));
     formData._newHospId = newHosp.id;
 
     // 등록 완료 시 해당 임시저장 항목 삭제
     const _urlDraftId = Number(new URLSearchParams(location.search).get('draft'));
     const _curDraftId = Number(formData._draftId) || _urlDraftId;
     const _curNameKr  = formData.nameKr;
-    let _drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+    let _drafts = JSON.parse(sessionStorage.getItem('MEDIFLOW_drafts') || '[]');
     // id 일치 OR 병원명 일치 OR draft URL 파라미터 일치 → 모두 제거
     _drafts = _drafts.filter(d =>
       Number(d._draftId) !== _curDraftId &&
       Number(d._draftId) !== _urlDraftId &&
       d.nameKr !== _curNameKr
     );
-    sessionStorage.setItem('ippeo_drafts', JSON.stringify(_drafts));
+    sessionStorage.setItem('MEDIFLOW_drafts', JSON.stringify(_drafts));
 
     currentStep = 5;
     renderWizard();
@@ -853,7 +898,7 @@ function resetForm() {
 (function() {
   const urlDraftId = Number(new URLSearchParams(location.search).get('draft'));
   if (!urlDraftId) return;
-  const drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+  const drafts = JSON.parse(sessionStorage.getItem('MEDIFLOW_drafts') || '[]');
   const saved = drafts.find(d => Number(d._draftId) === Number(urlDraftId));
   if (!saved) return;
   Object.assign(formData, saved);
@@ -872,7 +917,7 @@ function resetForm() {
 
   // sessionStorage에서 편집 대상 병원 데이터 로드
   let H = null;
-  try { H = JSON.parse(sessionStorage.getItem('ippeo_edit_hospital')); } catch(e) {}
+  try { H = JSON.parse(sessionStorage.getItem('MEDIFLOW_edit_hospital')); } catch(e) {}
 
   // sessionStorage에 없으면 HOSPITALS 배열에서 직접 찾기
   if (!H || H.id !== editId) {
