@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>알림 — MEDIFLOW Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/common.css">
+<style>
+.noti-row {
+  display:flex;align-items:flex-start;gap:14px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--gray-100);
+  cursor:pointer;transition:background .1s;
+  position:relative;
+}
+.noti-row:last-child { border-bottom:none; }
+.noti-row:hover { background:var(--gray-50); }
+.noti-row.unread { background:#F0F4FF; }
+.noti-row.unread:hover { background:#E8EFFE; }
+.unread-dot {
+  width:8px;height:8px;border-radius:50%;
+  background:var(--teal);flex-shrink:0;margin-top:5px;
+}
+.read-dot { width:8px;height:8px;flex-shrink:0; }
+.noti-icon {
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.noti-body { flex:1;min-width:0; }
+.noti-title { font-size:13px;font-weight:600;color:var(--navy);margin-bottom:3px; }
+.noti-row.unread .noti-title { color:var(--navy); }
+.noti-row:not(.unread) .noti-title { color:var(--gray-700); }
+.noti-desc { font-size:12px;color:var(--gray-500);line-height:1.5;margin-bottom:5px; }
+.noti-meta { display:flex;align-items:center;gap:8px; }
+.noti-hospital { font-size:11px;font-weight:500;color:var(--gray-400); }
+.noti-time { font-size:11px;color:var(--gray-300); }
+.noti-actions { display:flex;align-items:center;gap:6px;flex-shrink:0; }
+
+/* 타입별 아이콘 배경 */
+.ic-compliance { background:#FEF2F2; }
+.ic-billing    { background:#FFF7ED; }
+.ic-cs         { background:#F0FDF4; }
+.ic-onboarding { background:#EFF6FF; }
+.ic-contract   { background:#FAF5FF; }
+.ic-hospital   { background:#F0FDFA; }
+.ic-report     { background:var(--gray-100); }
+</style>
+</head>
+<body>
+<div id="sidebar-mount" data-active="notifications"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="../index.html">← 대시보드</a>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-title">알림</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" onclick="markAllRead()">✓ 전체 읽음</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI -->
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px" id="noti-kpi"></div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <!-- 필터 -->
+      <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);background:var(--gray-50);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div class="filter-pills" id="filter-pills">
+          <button class="pill on"  onclick="setFilter('all',this)">전체</button>
+          <button class="pill"     onclick="setFilter('unread',this)">미읽음</button>
+          <button class="pill"     onclick="setFilter('compliance',this)">🚨 컴플라이언스</button>
+          <button class="pill"     onclick="setFilter('cs',this)">🎧 CS</button>
+          <button class="pill"     onclick="setFilter('billing',this)">💳 결제</button>
+          <button class="pill"     onclick="setFilter('contract',this)">📋 계약</button>
+          <button class="pill"     onclick="setFilter('onboarding',this)">🚀 온보딩</button>
+          <button class="pill"     onclick="setFilter('hospital',this)">🏥 입점</button>
+        </div>
+      </div>
+
+      <!-- 목록 -->
+      <div id="noti-list" style="max-height:calc(100vh - 280px);overflow-y:auto"></div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/auth.js"></script>
+<script src="../js/sidebar.js"></script>
+<script>
+const NOTIFICATIONS = [
+  { id:1,  type:'compliance', unread:true,  icon:'🚨', title:'SLA 위반 감지',          desc:'강남미인클리닉 CS 문의 48시간 미응답 — 긴급 처리 필요',   hospital:'강남미인클리닉', time:'방금',     link:'cs_management.html' },
+  { id:2,  type:'billing',    unread:true,  icon:'💳', title:'미납 D+7 알림',           desc:'5월 청구금 미납 상태가 7일을 초과했습니다.',               hospital:'서울성형외과',   time:'1시간 전', link:'billing_management.html' },
+  { id:3,  type:'cs',         unread:true,  icon:'🎧', title:'긴급 CS 접수',            desc:'일본인 환자 환불 분쟁 건 — 즉시 확인 요망',               hospital:'올래성형외과',   time:'2시간 전', link:'cs_management.html' },
+  { id:4,  type:'hospital',   unread:true,  icon:'🏥', title:'신규 입점 신청',          desc:'입점 신청이 접수되었습니다. 온보딩을 시작하세요.',           hospital:'제이에스피부과', time:'3시간 전', link:'onboarding_list.html' },
+  { id:5,  type:'contract',   unread:true,  icon:'📋', title:'계약 만료 D-30',          desc:'계약이 30일 후 만료됩니다. 갱신 여부를 확인하세요.',         hospital:'한강뷰클리닉',   time:'오늘 09:00', link:'contract_management.html' },
+  { id:6,  type:'onboarding', unread:false, icon:'🚀', title:'온보딩 3단계 완료',       desc:'사이트 검수가 완료되어 게시 준비 상태입니다.',               hospital:'뷰티메드의원',   time:'어제 16:42', link:'onboarding_list.html' },
+  { id:7,  type:'compliance', unread:false, icon:'🚨', title:'약관 미동의 병원 감지',   desc:'서비스 이용약관 미동의 상태입니다. 조치가 필요합니다.',       hospital:'부산연세외과',   time:'어제 11:20', link:'hospital_list.html' },
+  { id:8,  type:'billing',    unread:false, icon:'💳', title:'정기 결제 완료',          desc:'6월 구독료 결제가 정상 처리되었습니다.',                     hospital:'올래성형외과',   time:'2일 전',   link:'billing_management.html' },
+  { id:9,  type:'contract',   unread:false, icon:'📋', title:'계약 만료 D-7',           desc:'계약 만료까지 7일 남았습니다. 갱신을 진행하세요.',           hospital:'압구정뷰클리닉', time:'3일 전',   link:'contract_management.html' },
+  { id:10, type:'hospital',   unread:false, icon:'🏥', title:'신규 입점 — 온보딩 시작', desc:'입점이 승인되어 온보딩 1단계가 시작되었습니다.',             hospital:'마포비뇨기과',   time:'4일 전',   link:'onboarding_list.html' },
+  { id:11, type:'onboarding', unread:false, icon:'🚀', title:'온보딩 1단계 완료',       desc:'병원 정보 등록이 완료되었습니다. 2단계를 진행하세요.',       hospital:'마포비뇨기과',   time:'4일 전',   link:'onboarding_list.html' },
+  { id:12, type:'cs',         unread:false, icon:'🎧', title:'CS 완료 처리',            desc:'접수된 문의가 담당자에 의해 완료 처리되었습니다.',           hospital:'강남미인클리닉', time:'5일 전',   link:'cs_management.html' },
+];
+
+const TYPE_IC = {
+  compliance:'ic-compliance', billing:'ic-billing', cs:'ic-cs',
+  onboarding:'ic-onboarding', contract:'ic-contract', hospital:'ic-hospital', report:'ic-report',
+};
+
+let currentFilter = 'all';
+
+// 읽음 상태를 sessionStorage에 유지 — 페이지를 벗어났다 돌아와도 유지됨
+const STORAGE_KEY = 'MEDIFLOW_noti_read';
+function loadReadSet() {
+  try { return new Set(JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || []); } catch { return new Set(); }
+}
+function saveReadSet(set) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch {}
+}
+const readSet = loadReadSet();
+
+function filtered() {
+  if (currentFilter === 'all')    return NOTIFICATIONS;
+  if (currentFilter === 'unread') return NOTIFICATIONS.filter(n => n.unread && !readSet.has(n.id));
+  return NOTIFICATIONS.filter(n => n.type === currentFilter);
+}
+
+function isUnread(n) { return n.unread && !readSet.has(n.id); }
+
+function renderKpi() {
+  const total   = NOTIFICATIONS.length;
+  const unread  = NOTIFICATIONS.filter(n => isUnread(n)).length;
+  const urgent  = NOTIFICATIONS.filter(n => n.type === 'compliance' && isUnread(n)).length;
+  const today   = NOTIFICATIONS.filter(n => ['방금','1시간 전','2시간 전','3시간 전'].includes(n.time)).length;
+  const kpis = [
+    { label:'전체 알림',   val:total,  sub:'누적',         color:'var(--navy)' },
+    { label:'미읽음',      val:unread, sub:'확인 필요',     color:'var(--teal)' },
+    { label:'긴급 (컴플라이언스)', val:urgent, sub:'즉시 처리', color:'var(--red)' },
+    { label:'오늘 발생',   val:today,  sub:'최근 3시간',    color:'var(--blue)' },
+  ];
+  document.getElementById('noti-kpi').innerHTML = kpis.map(k=>`
+    <div class="card" style="padding:14px 16px">
+      <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px">${k.label}</div>
+      <div style="font-size:26px;font-weight:700;color:${k.color};line-height:1">${k.val}</div>
+      <div style="font-size:11px;color:var(--gray-400);margin-top:4px">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderList() {
+  const list = filtered();
+  const el = document.getElementById('noti-list');
+  if (!list.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray-400);font-size:13px">알림이 없습니다</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => {
+    const unread = isUnread(n);
+    return `<div class="noti-row ${unread?'unread':''}" onclick="markRead(${n.id}, '${n.link}')">
+      <div class="${unread?'unread-dot':'read-dot'}"></div>
+      <div class="noti-icon ${TYPE_IC[n.type]||'ic-report'}">${n.icon}</div>
+      <div class="noti-body">
+        <div class="noti-title">${n.title}</div>
+        <div class="noti-desc">${n.desc}</div>
+        <div class="noti-meta">
+          <span class="noti-hospital">🏥 ${n.hospital}</span>
+          <span class="noti-time">· ${n.time}</span>
+        </div>
+      </div>
+      ${n.link ? `<div class="noti-actions"><span style="font-size:12px;color:var(--gray-300)">→</span></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function render() { renderKpi(); renderList(); }
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('#filter-pills .pill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderList();
+}
+
+function markRead(id, link) {
+  readSet.add(id);
+  saveReadSet(readSet);
+  render();
+  if (link) setTimeout(() => { location.href = link; }, 200);
+}
+
+function markAllRead() {
+  NOTIFICATIONS.forEach(n => readSet.add(n.id));
+  saveReadSet(readSet);
+  render();
+  showToast('모든 알림을 읽음 처리했습니다.', 'success');
+}
+
+function showToast(msg, type) {
+  const prev = document.getElementById('__toast'); if(prev) prev.remove();
+  const bg = type==='success'?'#059669':'#0F1E3C';
+  const t = document.createElement('div');
+  t.id='__toast';
+  t.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:${bg};color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:9999;white-space:nowrap`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},2500);
+}
+
+render();
+</script>
+</body>
+</html>

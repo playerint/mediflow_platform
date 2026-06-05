@@ -131,7 +131,10 @@
     <div class="tab-panel" id="tab-crm">
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px" id="crm-kpi"></div>
       <div class="card">
-        <div class="card-head"><div class="card-title">💬 최근 문의 내역</div></div>
+        <div class="card-head">
+          <div class="card-title">💬 최근 문의 내역</div>
+          <a id="crm-link" href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn btn-primary" style="font-size:12px;padding:4px 12px;text-decoration:none">병원 CRM 인박스 →</a>
+        </div>
         <table class="table">
           <thead><tr><th>환자명</th><th>채널</th><th>내용</th><th>접수</th><th>상태</th><th></th></tr></thead>
           <tbody id="crm-tbody"></tbody>
@@ -296,12 +299,16 @@ function renderOverview() {
     <span style="font-size:14px;font-weight:700;color:var(--${c})">${v}</span>
   </div>`).join('');
 
-  document.getElementById('quick-actions').innerHTML = [
-    {lb:'🚀 온보딩 이어서 진행', href:`onboarding_detail.html?id=${H.id}`, cls:''},
-    {lb:'💬 문의·CRM 보기', href:'crm_management.html', cls:''},
-    {lb:'📊 리포트 생성', href:'reports.html', cls:'btn-navy'},
-    {lb:'📄 계약서 다운로드', href:'#', cls:'', click:"printContract()"},
-  ].map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''}>${a.lb}</a>`).join('');
+  const quickActions = [
+    H.status === 'onboarding'
+      ? {lb:'🚀 온보딩 이어서 진행', href:`onboarding_detail.html?id=${H.id}`, cls:''}
+      : {lb:'🌐 사이트 관리', href:'site_management.html', cls:''},
+    {lb:'💬 문의·CRM 보기', href:'../../mediflow_hospital/html/hospital_crm_inbox.html', cls:''},
+    {lb:'📊 리포트 생성', href:'#', cls:'', click:'openReportModal()'},
+    {lb:'📄 계약서 다운로드', href:'#', cls:'', click:'printContract()'},
+  ];
+  document.getElementById('quick-actions').innerHTML = quickActions
+    .map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''}>${a.lb}</a>`).join('');
 }
 
 // ── 온보딩 탭 ──
@@ -417,13 +424,14 @@ function renderCrm() {
     {name:'다나카 유이',   ch:'LINE',  msg:'目の下のクマ治療について', time:'5/19',   status:'완료'},
     {name:'이토 나나',     ch:'LINE',  msg:'モニター募集はありますか？', time:'5/18',   status:'완료'},
   ];
+
   document.getElementById('crm-tbody').innerHTML = inquiries.map(q=>`<tr>
     <td style="font-weight:500">${q.name}</td>
     <td><span class="badge ${q.ch==='LINE'?'badge-green':'badge-blue'}">${q.ch}</span></td>
     <td style="font-size:12px;color:var(--gray-500);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.msg}</td>
     <td style="font-size:12px;color:var(--gray-400)">${q.time}</td>
     <td><span class="badge ${q.status==='미확인'?'badge-red':q.status==='상담중'?'badge-amber':'badge-gray'}">${q.status}</span></td>
-    <td><button class="btn" style="font-size:12px;padding:3px 8px" onclick="toggleReply(this,'${q.name}')">답변</button></td>
+    <td>${q.status==='상담중' ? `<button class="btn" style="font-size:12px;padding:3px 8px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>` : `<a href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn" style="font-size:12px;padding:3px 8px;text-decoration:none;white-space:nowrap">답변 →</a>`}</td>
   </tr>`).join('');
 }
 
@@ -636,6 +644,70 @@ function saveContractEdit() {
 }
 
 // ── 계약서 출력 ──
+function openReportModal() {
+  const now = new Date();
+  const months = Array.from({length:6}, (_,i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  });
+  const prev = document.getElementById('__report-modal'); if(prev) prev.remove();
+  const m = document.createElement('div');
+  m.id = '__report-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--gray-100)">
+      <div style="font-size:15px;font-weight:700;color:var(--navy)">📊 리포트 생성</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-top:2px">${H.name}</div>
+    </div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:6px">리포트 유형</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="report-type-grid">
+          ${[['monthly','📅 월간 리포트'],['quarterly','📊 분기 리포트'],['compliance','🔐 컴플라이언스'],['crm','💬 CRM 성과']].map(([v,lb])=>`
+            <div class="report-type-card" data-val="${v}" onclick="selectReportType(this)"
+              style="border:1.5px solid var(--gray-200);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--gray-700)">
+              ${lb}
+            </div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:6px">기간</div>
+        <select id="report-period" style="width:100%;padding:8px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:inherit">
+          ${months.map((m,i)=>`<option value="${m}">${m}${i===0?' (이번 달)':''}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="padding:14px 24px;background:var(--gray-50);display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="document.getElementById('__report-modal').remove()">취소</button>
+      <button class="btn btn-primary" onclick="generateReport()">📊 생성하기</button>
+    </div>
+  </div>`;
+  m.addEventListener('click', e => { if(e.target===m) m.remove(); });
+  document.body.appendChild(m);
+  // 첫 번째 카드 기본 선택
+  selectReportType(m.querySelector('.report-type-card'));
+}
+function selectReportType(el) {
+  document.querySelectorAll('.report-type-card').forEach(c => {
+    c.style.borderColor = 'var(--gray-200)';
+    c.style.background = '#fff';
+    c.style.color = 'var(--gray-700)';
+    c.style.fontWeight = '400';
+  });
+  el.style.borderColor = 'var(--teal)';
+  el.style.background = 'var(--teal-l)';
+  el.style.color = 'var(--teal-d)';
+  el.style.fontWeight = '600';
+}
+function generateReport() {
+  const type = document.querySelector('.report-type-card[style*="var(--teal-d)"]')?.dataset.val;
+  const period = document.getElementById('report-period')?.value;
+  if (!type || !period) return;
+  const labels = {monthly:'월간 리포트', quarterly:'분기 리포트', compliance:'컴플라이언스', crm:'CRM 성과'};
+  document.getElementById('__report-modal').remove();
+  showToast(`✓ ${H.name} ${period} ${labels[type]} 생성 완료`, 'success');
+}
+
 function printContract() {
   const planPrices = {Basic:390000, Pro:890000, Enterprise:1490000};
   const w = window.open('', '_blank');

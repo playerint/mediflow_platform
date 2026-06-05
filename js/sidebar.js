@@ -22,13 +22,14 @@
     { t:'a', key:'billing',    href:p+'billing_management.html',       ic:'💳', lb:'결제 관리', badge:'2', bc:'red' },
     { t:'a', key:'reports',    href:p+'reports.html',                  ic:'📊', lb:'리포트' },
     { t:'sec', lb:'시스템' },
+    { t:'a', key:'notifications', href:p+'notifications.html',          ic:'🔔', lb:'알림', badge:'5', bc:'' },
     { t:'a', key:'settings',   href:p+'settings.html',                 ic:'⚙',  lb:'설정' },
   ];
 
   var ROLE_MENUS = {
     super:   'all',
-    ops:     ['dashboard','hospitals','onboarding','site','crm','marketing','cs','settings'],
-    finance: ['dashboard','contract','billing','reports','settings'],
+    ops:     ['dashboard','hospitals','onboarding','site','crm','marketing','cs','notifications','settings'],
+    finance: ['dashboard','contract','billing','reports','notifications','settings'],
   };
 
   function canShow(key, role) {
@@ -61,6 +62,8 @@
         return;
       }
       if (n.t === 'a') {
+        // 알림·설정은 우측 유저 영역에 아이콘으로 표시 — 메인 nav에서 제외
+        if (n.key === 'notifications' || n.key === 'settings') return;
         if (canShow(n.key, role)) cur.push(n);
       }
     });
@@ -78,8 +81,14 @@
     });
     h += '</div>';
 
-    // 유저 정보 (우측)
+    // 유저 정보 (우측) — 알림·설정 아이콘 포함
+    var notiHref    = inHtml ? 'notifications.html' : 'html/notifications.html';
+    var settingsHref = inHtml ? 'settings.html'     : 'html/settings.html';
+    var notiActive  = active === 'notifications';
+    var setActive   = active === 'settings';
     h += '<div class="topnav-user">'
+       + '<a class="topnav-icon-btn'+(notiActive?' active':'')+'" href="'+notiHref+'" title="알림">🔔<span class="icon-badge">5</span></a>'
+       + '<a class="topnav-icon-btn'+(setActive?' active':'')+'" href="'+settingsHref+'" title="설정">⚙</a>'
        + '<div class="sf-avatar">'+name.charAt(0)+'</div>'
        + '<div class="sf-name">'+name+'</div>'
        + '<span class="'+roleCls+'">'+roleLabel+'</span>'

@@ -10,6 +10,11 @@ const HOSPITALS = [
   {id:12,name:'방배탑성형외과',  nameJa:'バンベタップ',      url:'(온보딩 중)',           plan:'Basic',     status:'onboarding',inq:0, expire:'-',          manager:'김운영',compliance:0,visitors:0,   revenue:0,      aeo:0, lineRate:0, conv:0},
 ];
 
+// hospital_detail.html에서 넘어온 경우 해당 병원으로 자동 필터
+const urlParams = new URLSearchParams(location.search);
+const filterHospitalId = urlParams.get('hospital') ? Number(urlParams.get('hospital')) : null;
+const filterHospital = filterHospitalId ? HOSPITALS.find(h => h.id === filterHospitalId) : null;
+
 const crmKpi = document.getElementById('crm-kpi');
 const totalInq = HOSPITALS.reduce((s,h)=>s+h.inq,0);
 crmKpi.innerHTML = [
@@ -17,10 +22,20 @@ crmKpi.innerHTML = [
   {label:'평균 전환율',val:'29%',cl:'blue'},{label:'AI 자동 해결',val:'68%',cl:'green'},
 ].map(k=>`<div class="kpi-card ${k.cl}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.val}</div></div>`).join('');
 
+// 병원 필터 배너 (hospital_detail에서 진입 시)
+if (filterHospital) {
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:var(--navy-l);border:1px solid rgba(37,99,235,.2);border-radius:8px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--navy)';
+  banner.innerHTML = `<span>🏥 <strong>${filterHospital.name}</strong> 문의만 표시 중</span><a href="crm_management.html" style="font-size:12px;color:var(--gray-400);text-decoration:none">전체 보기 ✕</a>`;
+  const crmContent = document.querySelector('.content');
+  if (crmContent) crmContent.insertBefore(banner, crmContent.firstChild);
+}
+
 const hList = document.getElementById('crm-hospital-list');
 HOSPITALS.filter(h=>h.status==='active').sort((a,b)=>b.inq-a.inq).forEach(h=>{
-  hList.innerHTML += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .1s" onclick="location.href='hospital_detail.html?id=${h.id}'" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''">
-    <span style="font-size:13px;color:var(--gray-900);min-width:130px">${h.name}</span>
+  const isActive = filterHospital && h.id === filterHospital.id;
+  hList.innerHTML += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .1s;${isActive?'background:var(--navy-l);':''}border-radius:${isActive?'6px':0}" onclick="location.href='hospital_detail.html?id=${h.id}'" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='${isActive?'var(--navy-l)':''}'" >
+    <span style="font-size:13px;color:var(--gray-900);min-width:130px;font-weight:${isActive?700:400}">${h.name}</span>
     <div style="flex:1;height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--blue);width:${Math.round(h.inq/31*100)}%"></div></div>
     <span style="font-size:12px;font-weight:600;color:var(--navy);min-width:30px;text-align:right">${h.inq}건</span>
     <span class="up" style="font-size:12px;min-width:34px;text-align:right">${h.conv}%</span>
@@ -49,15 +64,26 @@ function exportCsv(headers, rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-const unread = [
-  {hospital:'올래성형외과',patient:'야마다 사오리',ch:'LINE',msg:'二重整形について',elapsed:'2시간',status:'미확인'},
-  {hospital:'청담미래성형외과',patient:'스즈키 미카',ch:'LINE',msg:'鼻整形の費用は？',elapsed:'1시간',status:'미확인'},
-  {hospital:'강남뷰티클리닉',patient:'사토 하루카',ch:'LINE',msg:'初回カウンセリング',elapsed:'3시간',status:'상담중'},
+const ALL_UNREAD = [
+  {hospital:'올래성형외과',   hospitalId:1, patient:'야마다 사오리',ch:'LINE',      msg:'二重整形について',   elapsed:'2시간',status:'미확인'},
+  {hospital:'청담미래성형외과',hospitalId:3, patient:'스즈키 미카',  ch:'LINE',      msg:'鼻整形の費用は？',  elapsed:'1시간',status:'미확인'},
+  {hospital:'강남뷰티클리닉', hospitalId:2, patient:'사토 하루카',  ch:'Instagram', msg:'初回カウンセリング',elapsed:'3시간',status:'상담중'},
+  {hospital:'올래성형외과',   hospitalId:1, patient:'다나카 유이',  ch:'LINE',      msg:'目の下のクマ治療',  elapsed:'5시간',status:'미확인'},
 ];
+
+const unread = filterHospitalId
+  ? ALL_UNREAD.filter(u => u.hospitalId === filterHospitalId)
+  : ALL_UNREAD;
+
 const tb = document.getElementById('crm-tbody');
-unread.forEach(u=>{
-  tb.innerHTML += `<tr><td><span class="badge badge-teal" style="font-size:10px">${u.hospital}</span></td><td>${u.patient}</td><td>${u.ch}</td><td style="font-size:12px;color:var(--gray-500)">${u.msg}</td><td style="color:var(--red);font-size:12px">${u.elapsed}</td><td><span class="badge badge-${u.status==='미확인'?'red':'amber'}" id="status-${u.patient.replace(/ /g,'')}">${u.status}</span></td><td><button class="btn" style="font-size:12px;padding:3px 9px" onclick="toggleCrmReply(this,'${u.patient}','${u.hospital}')">답변</button></td></tr>`;
-});
+if (!unread.length) {
+  tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-400);font-size:13px">미확인 문의가 없습니다</td></tr>';
+} else {
+  unread.forEach(u=>{
+    const canReply = u.status === '미확인';
+    tb.innerHTML += `<tr><td><span class="badge badge-teal" style="font-size:10px">${u.hospital}</span></td><td>${u.patient}</td><td>${u.ch}</td><td style="font-size:12px;color:var(--gray-500)">${u.msg}</td><td style="color:var(--red);font-size:12px">${u.elapsed}</td><td><span class="badge badge-${u.status==='미확인'?'red':'amber'}" id="status-${u.patient.replace(/ /g,'')}">${u.status}</span></td><td>${canReply ? `<a class="btn" style="font-size:12px;padding:3px 9px;text-decoration:none" href="../../mediflow_hospital/html/hospital_crm_inbox.html">답변 →</a>` : `<button class="btn" style="font-size:12px;padding:3px 9px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>`}</td></tr>`;
+  });
+}
 
 /* ── CRM 인라인 답변 ── */
 function toggleCrmReply(btn, patient, hospital) {

@@ -21,8 +21,8 @@
     </div>
   </div>
   <div class="content">
-    <div style="display:grid;grid-template-columns:200px 1fr;gap:16px">
-      <div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;height:fit-content;position:sticky;top:72px">
+    <div class="settings-layout">
+      <div class="settings-nav">
         <div class="sn-item active" onclick="showSec('profile',this)"><span>👤</span> 내 프로필</div>
         <div class="sn-item" onclick="showSec('team',this)"><span>👥</span> 팀 계정 관리</div>
         <div class="sn-item" onclick="showSec('roles',this)"><span>🔐</span> 권한 설정</div>
@@ -34,10 +34,61 @@
   </div>
 </main>
 <style>
-.sn-item{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;color:var(--gray-500);cursor:pointer;border-bottom:1px solid var(--gray-100);transition:background .1s;}
-.sn-item:last-child{border-bottom:none;}
-.sn-item:hover{background:var(--gray-50);color:var(--gray-700);}
-.sn-item.active{background:var(--teal-l);color:var(--teal-d);font-weight:500;}
+/* 기본: 좌측 세로 네비 + 우측 콘텐츠 */
+.settings-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.settings-nav {
+  width: 200px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--rl);
+  overflow: hidden;
+  position: sticky;
+  top: 72px;
+}
+#sec-content {
+  flex: 1;
+  min-width: 0; /* 콘텐츠가 넓어도 부모 밖으로 안 밀림 */
+}
+.sn-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; font-size: 13px;
+  color: var(--gray-500); cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background .1s; white-space: nowrap;
+}
+.sn-item:last-child { border-bottom: none; }
+.sn-item:hover { background: var(--gray-50); color: var(--gray-700); }
+.sn-item.active { background: var(--teal-l); color: var(--teal-d); font-weight: 500; }
+
+/* 좁은 화면: 네비를 상단 가로 탭으로 전환 */
+@media (max-width: 1024px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+  .settings-nav {
+    width: 100%;
+    position: static;
+    display: flex;
+    overflow-x: auto;
+  }
+  .settings-nav::-webkit-scrollbar { display: none; }
+  .sn-item {
+    border-bottom: 2px solid transparent;
+    border-right: 1px solid var(--gray-100);
+    flex-shrink: 0;
+    padding: 10px 16px;
+  }
+  .sn-item:last-child { border-right: none; }
+  .sn-item.active {
+    border-bottom: 2px solid var(--teal-d);
+    background: var(--teal-l);
+  }
+}
 </style>
 
 
