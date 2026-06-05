@@ -32,36 +32,41 @@ const SECTIONS = {
   </div>`,
 
   roles: `<div class="card fade">
-    <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:16px">🔐 권한 설정</div>
+    <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">🔐 권한 설정</div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">운영팀·재무팀 권한을 직접 켜고 끌 수 있습니다. 슈퍼 어드민은 항상 모든 권한을 갖습니다.</div>
     <div style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse">
         <thead>
           <tr>
             <th style="font-size:12px;color:var(--gray-400);text-align:left;padding:8px 12px;border-bottom:2px solid var(--gray-100)">메뉴</th>
-            <th style="font-size:12px;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="role-super">슈퍼 어드민</span></th>
-            <th style="font-size:12px;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="role-ops">운영팀</span></th>
-            <th style="font-size:12px;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="role-finance">재무팀</span></th>
+            <th style="font-size:12px;text-align:center;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="demo-role role-super">슈퍼 어드민</span></th>
+            <th style="font-size:12px;text-align:center;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="demo-role role-ops">운영팀</span></th>
+            <th style="font-size:12px;text-align:center;padding:8px 12px;border-bottom:2px solid var(--gray-100)"><span class="demo-role role-finance">재무팀</span></th>
           </tr>
         </thead>
         <tbody>
           ${[
-            ['대시보드','✓','✓','✓'],
-            ['병원 관리','✓','✓','✗'],
-            ['온보딩 관리','✓','✓','✗'],
-            ['사이트 관리','✓','✓','✗'],
-            ['CRM 관리','✓','✓','✗'],
-            ['마케팅 관리','✓','✓','✗'],
-            ['CS 관리','✓','✓','✗'],
-            ['계약 관리','✓','✗','✓'],
-            ['결제 관리','✓','✗','✓'],
-            ['리포트','✓','✗','✓'],
-            ['설정 (팀 관리)','✓','✗','✗'],
-            ['설정 (본인 프로필)','✓','✓','✓'],
-          ].map(r=>`<tr>
+            ['대시보드',         true,  true],
+            ['병원 관리',        true,  false],
+            ['온보딩 관리',      true,  false],
+            ['사이트 관리',      true,  false],
+            ['CRM 관리',         true,  false],
+            ['마케팅 관리',      true,  false],
+            ['CS 관리',          true,  false],
+            ['계약 관리',        false, true],
+            ['결제 관리',        false, true],
+            ['리포트',           false, true],
+            ['설정 (팀 관리)',   false, false],
+            ['설정 (본인 프로필)', true, true],
+          ].map((r,i)=>`<tr>
             <td style="font-size:13px;color:var(--gray-700);padding:10px 12px;border-bottom:1px solid var(--gray-100)">${r[0]}</td>
-            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100);color:var(--green);font-weight:700">${r[1]}</td>
-            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100);color:${r[2]==='✓'?'var(--green)':'var(--red)'};font-weight:700">${r[2]}</td>
-            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100);color:${r[3]==='✓'?'var(--green)':'var(--red)'};font-weight:700">${r[3]}</td>
+            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100);color:var(--green);font-size:16px">✓</td>
+            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100)">
+              <label class="toggle-wrap"><input type="checkbox" ${r[1]?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </td>
+            <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--gray-100)">
+              <label class="toggle-wrap"><input type="checkbox" ${r[2]?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>
