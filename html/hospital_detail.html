@@ -133,7 +133,7 @@
       <div class="card">
         <div class="card-head">
           <div class="card-title">💬 최근 문의 내역</div>
-          <a id="crm-link" href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn btn-primary" style="font-size:12px;padding:4px 12px;text-decoration:none">병원 CRM 인박스 →</a>
+          <a id="crm-link" href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn btn-primary" style="font-size:12px;padding:4px 12px;text-decoration:none" target="_blank">병원 CRM 인박스 →</a>
         </div>
         <table class="table">
           <thead><tr><th>환자명</th><th>채널</th><th>내용</th><th>접수</th><th>상태</th><th></th></tr></thead>
@@ -303,12 +303,12 @@ function renderOverview() {
     H.status === 'onboarding'
       ? {lb:'🚀 온보딩 이어서 진행', href:`onboarding_detail.html?id=${H.id}`, cls:''}
       : {lb:'🌐 사이트 관리', href:'site_management.html', cls:''},
-    {lb:'💬 문의·CRM 보기', href:'../../mediflow_hospital/html/hospital_crm_inbox.html', cls:''},
+    {lb:'💬 문의·CRM 보기', href:'../../mediflow_hospital/html/hospital_crm_inbox.html', cls:'', blank:true},
     {lb:'📊 리포트 생성', href:'#', cls:'', click:'openReportModal()'},
     {lb:'📄 계약서 다운로드', href:'#', cls:'', click:'printContract()'},
   ];
   document.getElementById('quick-actions').innerHTML = quickActions
-    .map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''}>${a.lb}</a>`).join('');
+    .map(a=>`<a class="btn ${a.cls}" href="${a.href}" ${a.click?`onclick="${a.click}"`:''} ${a.blank?'target="_blank"':''}>${a.lb}</a>`).join('');
 }
 
 // ── 온보딩 탭 ──
@@ -431,7 +431,7 @@ function renderCrm() {
     <td style="font-size:12px;color:var(--gray-500);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.msg}</td>
     <td style="font-size:12px;color:var(--gray-400)">${q.time}</td>
     <td><span class="badge ${q.status==='미확인'?'badge-red':q.status==='상담중'?'badge-amber':'badge-gray'}">${q.status}</span></td>
-    <td>${q.status==='상담중' ? `<button class="btn" style="font-size:12px;padding:3px 8px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>` : `<a href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn" style="font-size:12px;padding:3px 8px;text-decoration:none;white-space:nowrap">답변 →</a>`}</td>
+    <td>${q.status==='상담중' ? `<button class="btn" style="font-size:12px;padding:3px 8px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>` : `<a href="../../mediflow_hospital/html/hospital_crm_inbox.html" class="btn" style="font-size:12px;padding:3px 8px;text-decoration:none;white-space:nowrap" target="_blank">답변 →</a>`}</td>
   </tr>`).join('');
 }
 

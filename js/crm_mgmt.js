@@ -81,7 +81,7 @@ if (!unread.length) {
 } else {
   unread.forEach(u=>{
     const canReply = u.status === '미확인';
-    tb.innerHTML += `<tr><td><span class="badge badge-teal" style="font-size:10px">${u.hospital}</span></td><td>${u.patient}</td><td>${u.ch}</td><td style="font-size:12px;color:var(--gray-500)">${u.msg}</td><td style="color:var(--red);font-size:12px">${u.elapsed}</td><td><span class="badge badge-${u.status==='미확인'?'red':'amber'}" id="status-${u.patient.replace(/ /g,'')}">${u.status}</span></td><td>${canReply ? `<a class="btn" style="font-size:12px;padding:3px 9px;text-decoration:none" href="../../mediflow_hospital/html/hospital_crm_inbox.html">답변 →</a>` : `<button class="btn" style="font-size:12px;padding:3px 9px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>`}</td></tr>`;
+    tb.innerHTML += `<tr><td><span class="badge badge-teal" style="font-size:10px">${u.hospital}</span></td><td>${u.patient}</td><td>${u.ch}</td><td style="font-size:12px;color:var(--gray-500)">${u.msg}</td><td style="color:var(--red);font-size:12px">${u.elapsed}</td><td><span class="badge badge-${u.status==='미확인'?'red':'amber'}" id="status-${u.patient.replace(/ /g,'')}">${u.status}</span></td><td>${canReply ? `<a class="btn" style="font-size:12px;padding:3px 9px;text-decoration:none" href="../../mediflow_hospital/html/hospital_crm_inbox.html" target="_blank">답변 →</a>` : `<button class="btn" style="font-size:12px;padding:3px 9px;opacity:.4;cursor:not-allowed" disabled>답변 →</button>`}</td></tr>`;
   });
 }
 
