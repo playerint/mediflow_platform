@@ -44,35 +44,45 @@
     var roleLabel = role === 'super' ? '슈퍼 어드민' : role === 'ops' ? '운영팀' : '재무팀';
 
     var h = '';
+
+    // 로고 (좌측)
     h += '<div class="sidebar-logo">'
        + '<div class="logo-mark">MEDI<span>FLOW</span></div>'
-       + '<div class="logo-sub">글로벌 메디컬 플로우</div>'
        + '</div>';
 
+    // 네비 링크 (수평, 그룹 구분선 포함)
+    h += '<div class="topnav-links">';
+    var groups = [];
+    var cur = [];
     MENUS.forEach(function(n){
       if (n.t === 'sec') {
-        h += '<div class="nav-section">'+n.lb+'</div>';
+        if (cur.length) groups.push(cur);
+        cur = [];
         return;
       }
       if (n.t === 'a') {
-        if (!canShow(n.key, role)) return; // 권한 없으면 숨김
+        if (canShow(n.key, role)) cur.push(n);
+      }
+    });
+    if (cur.length) groups.push(cur);
+
+    groups.forEach(function(grp, gi){
+      if (gi > 0) h += '<div class="topnav-sep"></div>';
+      grp.forEach(function(n){
         var on = active === n.key;
         var badge = n.badge ? ' <span class="nav-badge'+(n.bc?' '+n.bc:'')+'">'+n.badge+'</span>' : '';
         h += '<a class="nav-item'+(on?' active':'')+'" href="'+n.href+'">'
            + '<span>'+n.ic+'</span> '+n.lb+badge
            + '</a>';
-      }
+      });
     });
+    h += '</div>';
 
-    h += '<div class="sidebar-footer">'
-       + '<div class="sf-user">'
+    // 유저 정보 (우측)
+    h += '<div class="topnav-user">'
        + '<div class="sf-avatar">'+name.charAt(0)+'</div>'
-       + '<div style="flex:1;min-width:0">'
-       + '<div class="sf-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-       + name
+       + '<div class="sf-name">'+name+'</div>'
        + '<span class="'+roleCls+'">'+roleLabel+'</span>'
-       + '</div>'
-       + '</div></div>'
        + '<button class="sf-logout" onclick="logout()">🚪 로그아웃</button>'
        + '</div>';
 

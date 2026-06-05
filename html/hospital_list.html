@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>병원 목록 — ippeo Admin</title>
+<title>병원 목록 — MEDIFLOW Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/common.css">
 <link rel="stylesheet" href="../css/hospitals.css">
@@ -86,7 +86,7 @@
 // 신규 등록된 병원을 sessionStorage에서 읽어 hospital_list.js의 HOSPITALS에 병합
 window.__mergeNewHospitals = function() {
   try {
-    const added = JSON.parse(sessionStorage.getItem('ippeo_new_hospitals') || '[]');
+    const added = JSON.parse(sessionStorage.getItem('MEDIFLOW_new_hospitals') || '[]');
     if (added.length && typeof HOSPITALS !== 'undefined') {
       added.forEach(h => {
         if (!HOSPITALS.find(x => x.id === h.id)) HOSPITALS.push(h);
@@ -104,7 +104,7 @@ const STEP_LABELS = {1:'기본 정보', 2:'플랜 선택', 3:'담당자 설정',
 const PLAN_CLS    = {Pro:'badge-blue', Enterprise:'badge-purple', Basic:'badge-gray'};
 
 function renderDraftBanner() {
-  const drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+  const drafts = JSON.parse(sessionStorage.getItem('MEDIFLOW_drafts') || '[]');
   const banner  = document.getElementById('draft-banner');
   if (!banner) return;
 
@@ -151,9 +151,9 @@ function openModal(title,body,onConfirm,confirmLabel,confirmCls){var e=document.
 
 function deleteDraft(id) {
   openModal('🗑 임시저장 삭제', '이 임시저장 항목을 삭제하시겠습니까?', function() {
-    let drafts = JSON.parse(sessionStorage.getItem('ippeo_drafts') || '[]');
+    let drafts = JSON.parse(sessionStorage.getItem('MEDIFLOW_drafts') || '[]');
     drafts = drafts.filter(d => d._draftId !== id);
-    sessionStorage.setItem('ippeo_drafts', JSON.stringify(drafts));
+    sessionStorage.setItem('MEDIFLOW_drafts', JSON.stringify(drafts));
     renderDraftBanner();
     showToast('✓ 삭제되었습니다.', '');
   }, '삭제', 'btn-danger');
@@ -161,7 +161,7 @@ function deleteDraft(id) {
 
 function deleteAllDrafts() {
   openModal('🗑 전체 삭제', '임시저장된 항목을 모두 삭제하시겠습니까?', function() {
-    sessionStorage.removeItem('ippeo_drafts');
+    sessionStorage.removeItem('MEDIFLOW_drafts');
     renderDraftBanner();
     showToast('✓ 전체 삭제되었습니다.', '');
   }, '전체 삭제', 'btn-danger');

@@ -37,7 +37,7 @@ const obKpi = document.getElementById('ob-kpi');
 obKpi.innerHTML = [
   {label:'진행 중',val:'3건',color:'amber'},{label:'완료',val:'9건',color:'green'},
   {label:'평균 소요일',val:'4.2일',color:'teal'},{label:'이번 달 완료',val:'2건',color:'blue'},
-].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.color})">
+].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px">
   <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
   <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
 </div>`).join('');

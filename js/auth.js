@@ -1,6 +1,6 @@
-
+﻿
 /**
- * auth.js — 이뻐 관리자 권한 관리
+ * auth.js — MEDIFLOW 관리자 권한 관리
  * 권한: super(슈퍼 어드민) | ops(운영팀) | finance(재무팀)
  *
  * 메뉴 접근 권한:
@@ -17,21 +17,21 @@ const ROLES = {
 
 // 데모용 계정 (실제는 서버 인증)
 const DEMO_ACCOUNTS = [
-  { email:'admin@ippeo.co.kr',    password:'admin1234',  name:'김운영', role:'super'   },
-  { email:'ops@ippeo.co.kr',      password:'ops1234',    name:'이수진', role:'ops'     },
-  { email:'finance@ippeo.co.kr',  password:'finance1234',name:'박재무', role:'finance' },
+  { email:'admin@MEDIFLOW.co.kr',    password:'admin1234',  name:'김운영', role:'super'   },
+  { email:'ops@MEDIFLOW.co.kr',      password:'ops1234',    name:'이수진', role:'ops'     },
+  { email:'finance@MEDIFLOW.co.kr',  password:'finance1234',name:'박재무', role:'finance' },
 ];
 
-var DEFAULT_SESSION = { email:'admin@ippeo.co.kr', name:'김운영', role:'super' };
+var DEFAULT_SESSION = { email:'admin@MEDIFLOW.co.kr', name:'김운영', role:'super' };
 
 function getSession() {
-  try { return JSON.parse(sessionStorage.getItem('ippeo_user')) || null; } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem('MEDIFLOW_user')) || null; } catch { return null; }
 }
 function setSession(user) {
-  sessionStorage.setItem('ippeo_user', JSON.stringify(user));
+  sessionStorage.setItem('MEDIFLOW_user', JSON.stringify(user));
 }
 function clearSession() {
-  sessionStorage.removeItem('ippeo_user');
+  sessionStorage.removeItem('MEDIFLOW_user');
 }
 function requireAuth() {
   const user = getSession();

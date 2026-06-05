@@ -14,7 +14,7 @@ const siteKpi = document.getElementById('site-kpi');
 siteKpi.innerHTML = [
   {label:'전체 사이트',val:'12개',color:'teal'},{label:'게시 중',val:'9개',color:'green'},
   {label:'컴플라이언스 위반',val:'3건',color:'red'},{label:'검수 대기',val:'2건',color:'amber'},
-].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.color})">
+].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px">
   <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
   <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
 </div>`).join('');

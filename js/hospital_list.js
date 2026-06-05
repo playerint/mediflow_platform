@@ -32,7 +32,7 @@ function renderKPI() {
     {label:'온보딩',val:ob+'개',color:'amber'},
     {label:'이번 달 총 문의',val:totalInq+'건',color:'blue'},
   ];
-  el.innerHTML = kpis.map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.color})">
+  el.innerHTML = kpis.map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px">
     <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
     <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
   </div>`).join('');

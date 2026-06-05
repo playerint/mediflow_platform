@@ -8,7 +8,7 @@ const SECTIONS = {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">이름</div><input type="text" value="김운영"></div>
-      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">이메일</div><input type="email" value="admin@ippeo.co.kr"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">이메일</div><input type="email" value="admin@MEDIFLOW.co.kr"></div>
     </div>
     <div style="margin-top:12px"><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">현재 비밀번호</div><input type="password" placeholder="변경 시 입력"></div>
   </div>`,
@@ -19,9 +19,9 @@ const SECTIONS = {
       <button class="btn btn-primary" style="font-size:12px" onclick="openInviteModal()">+ 멤버 초대</button>
     </div>
     ${[
-      {name:'김운영',email:'admin@ippeo.co.kr',role:'super',last:'방금'},
-      {name:'이수진',email:'ops@ippeo.co.kr',role:'ops',last:'1시간 전'},
-      {name:'박재무',email:'finance@ippeo.co.kr',role:'finance',last:'어제'},
+      {name:'김운영',email:'admin@MEDIFLOW.co.kr',role:'super',last:'방금'},
+      {name:'이수진',email:'ops@MEDIFLOW.co.kr',role:'ops',last:'1시간 전'},
+      {name:'박재무',email:'finance@MEDIFLOW.co.kr',role:'finance',last:'어제'},
     ].map(m=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100)">
       <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${m.name.charAt(0)}</div>
       <div style="flex:1"><div style="font-size:13px;font-weight:500">${m.name}</div><div style="font-size:12px;color:var(--gray-400)">${m.email}</div></div>
@@ -83,8 +83,8 @@ const SECTIONS = {
   system: `<div class="card fade">
     <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:16px">⚙ 시스템 설정</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">플랫폼 이름</div><input type="text" value="ippeo Admin"></div>
-      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">대표 이메일</div><input type="email" value="admin@ippeo.co.kr"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">플랫폼 이름</div><input type="text" value="MEDIFLOW Admin"></div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">대표 이메일</div><input type="email" value="admin@MEDIFLOW.co.kr"></div>
       <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">Claude API 모델</div><select><option>claude-sonnet-4</option><option>claude-haiku-4-5</option></select></div>
       <div><div style="font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:5px">기본 언어</div><select><option>한국어</option><option>日本語</option><option>English</option></select></div>
     </div>
@@ -136,7 +136,7 @@ function saveSettings() {
     const key = el.id || el.name || el.placeholder;
     if (key) data[key] = el.type==='checkbox' ? el.checked : el.value;
   });
-  try { sessionStorage.setItem('ippeo_settings', JSON.stringify(data)); } catch(e) {}
+  try { sessionStorage.setItem('MEDIFLOW_settings', JSON.stringify(data)); } catch(e) {}
   showToast('설정이 저장되었습니다.', 'success');
 }
 

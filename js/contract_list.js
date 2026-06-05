@@ -14,7 +14,7 @@ const contractKpi = document.getElementById('contract-kpi');
 contractKpi.innerHTML = [
   {label:'전체 계약',val:'12건',color:'teal'},{label:'자동 갱신',val:'8건',color:'green'},
   {label:'30일 내 만료',val:'2건',color:'red'},{label:'이번 달 신규',val:'2건',color:'blue'},
-].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.color})">
+].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px">
   <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
   <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
 </div>`).join('');

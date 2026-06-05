@@ -63,7 +63,7 @@ const csKpi = document.getElementById('cs-kpi');
 csKpi.innerHTML = [
   {label:'전체 CS',val:'6건',color:'teal'},{label:'미처리',val:'4건',color:'red'},
   {label:'긴급',val:'2건',color:'amber'},{label:'평균 처리 시간',val:'2.3시간',color:'blue'},
-].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px;border-left:3px solid var(--${k.color})">
+].map(k=>`<div style="background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);padding:12px 16px">
   <div style="font-size:12px;color:var(--gray-400);margin-bottom:4px">${k.label}</div>
   <div style="font-size:22px;font-weight:700;color:var(--navy)">${k.val}</div>
 </div>`).join('');
