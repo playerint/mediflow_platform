@@ -20,7 +20,7 @@
 .wz-step.current .wz-label{color:var(--navy);font-weight:600;}
 
 /* ── 등록 카드 ── */
-.reg-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;max-width:800px;margin:0 auto;}
+.reg-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;max-width:1040px;margin:0 auto;}
 .reg-card-head{padding:20px 28px;border-bottom:1px solid var(--gray-100);background:linear-gradient(90deg,rgba(13,148,136,.04),transparent);}
 .reg-card-body{padding:28px;}
 .reg-card-foot{padding:16px 28px;border-top:1px solid var(--gray-100);background:var(--gray-50);display:flex;align-items:center;justify-content:space-between;}
@@ -46,7 +46,7 @@
 .plan-feature{font-size:12px;color:var(--gray-500);padding:2px 0;display:flex;align-items:center;gap:4px;}
 
 /* ── 진료과 유형 카드 ── */
-.clinic-type-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px;}
+.clinic-type-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px;}
 .clinic-type-card{border:2px solid var(--gray-200);border-radius:var(--r);padding:14px 12px;cursor:pointer;transition:all .15s;text-align:center;}
 .clinic-type-card:hover{border-color:var(--gray-400);background:var(--gray-50);}
 .clinic-type-card.selected{border-color:var(--navy);background:rgba(15,30,60,.04);}
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <div class="content fade" style="max-width:900px;margin:0 auto">
+  <div class="content fade" style="max-width:1100px;margin:0 auto">
 
     <!-- 위자드 스텝 -->
     <div class="wizard-bar" id="wizard-bar"></div>
@@ -905,7 +905,7 @@ function resetForm() {
   currentStep = saved._step || 1;
   // 복원 배너
   const banner = document.createElement('div');
-  banner.style.cssText = 'background:var(--amber-l);border:1px solid #FCD34D;border-radius:var(--r);padding:10px 16px;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:800px;margin-left:auto;margin-right:auto';
+  banner.style.cssText = 'background:var(--amber-l);border:1px solid #FCD34D;border-radius:var(--r);padding:10px 16px;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:1040px;margin-left:auto;margin-right:auto';
   banner.innerHTML = '📂 <strong>' + saved.nameKr + '</strong> 임시저장 데이터를 불러왔습니다. (' + saved._savedAt + ')&nbsp;&nbsp;<button onclick="this.parentNode.remove()" style="border:none;background:none;cursor:pointer;color:#92400E;font-size:14px">✕</button>';
   document.querySelector('.content').prepend(banner);
 })();
@@ -949,7 +949,7 @@ function resetForm() {
 
   // 편집 안내 배너
   const banner = document.createElement('div');
-  banner.style.cssText = 'background:var(--navy-l);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:800px;margin-left:auto;margin-right:auto';
+  banner.style.cssText = 'background:var(--navy-l);border:1px solid #BFDBFE;border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;max-width:1040px;margin-left:auto;margin-right:auto';
   banner.innerHTML = '✏ <strong>' + H.name + '</strong> 병원 정보를 수정합니다.&nbsp;&nbsp;<button onclick="this.parentNode.remove()" style="border:none;background:none;cursor:pointer;color:var(--navy);font-size:14px">✕</button>';
   document.querySelector('.content').prepend(banner);
 })();
