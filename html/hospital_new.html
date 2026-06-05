@@ -930,9 +930,10 @@ function resetForm() {
   // formData에 기존 병원 정보 매핑
   Object.assign(formData, {
     _editId:      H.id,
-    nameKr:       H.name      || '',
+    nameKr:       H.name       || '',
     nameJa:       H.nameJa    || '',
-    specialty:    H.specialty || '',
+    clinicType:   H.clinicType || '',
+    specialty:    H.specialty  || '',
     phone:        H.phone     || '',
     email:        H.email     || '',
     address:      H.address   || '',
