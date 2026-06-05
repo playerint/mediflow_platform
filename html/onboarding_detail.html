@@ -368,10 +368,10 @@ var HOSPITALS = [
 ];
 
 var OB_STEPS = [
-  {name:'자동 분석',   sub:'URL 크롤링 · 자산 추출'},
+  {name:'자동 분석',   sub:'URL 크롤링 · 이미지 추출'},
   {name:'전략 산출',   sub:'AI 기획안 · SEO 키워드'},
   {name:'디자인',      sub:'템플릿 선택'},
-  {name:'자산',        sub:'사진 업로드'},
+  {name:'이미지',      sub:'이미지 업로드'},
   {name:'카피 검수',   sub:'일본어 재집필 확인'},
   {name:'컴플라이언스',sub:'광고법 5종 검사'},
   {name:'퍼널 연결',   sub:'LINE·CRM·팔로잉'},
@@ -862,7 +862,7 @@ var STEPS = {
     if (!analyzed) {
       return '<div class="ob-tag">STEP 1 · 자동 분석</div>'
         + '<h2 class="ob-title">URL 하나로 전부 시작합니다</h2>'
-        + '<p class="ob-desc">한국 병원 홈페이지를 AI가 크롤링해 시술·의료진·사진 자산을 자동 추출합니다.</p>'
+        + '<p class="ob-desc">한국 병원 홈페이지를 AI가 크롤링해 시술·의료진·사진 이미지를 자동 추출합니다.</p>'
         + '<div class="ob-box">'
         + '<div style="font-size:12px;font-weight:600;color:var(--s500);margin-bottom:10px">한국 병원 홈페이지 주소</div>'
         + '<div style="display:flex;gap:10px">'
@@ -926,7 +926,7 @@ var STEPS = {
           + '<div style="font-size:12px;margin-top:2px;color:var(--s500)">AI가 이미지를 자동 생성하지 않는 섹션입니다. '
           + '반영 후 병원 관리자가 직접 이미지를 등록해야 사이트에 노출됩니다.</div></div>'
           + '<button class="btn" style="flex-shrink:0;white-space:nowrap;margin-left:8px" '
-          + 'onclick="applyToHospital();setTimeout(function(){goStep(4)},400)">자산 관리 →</button>'
+          + 'onclick="applyToHospital();setTimeout(function(){goStep(4)},400)">이미지 관리 →</button>'
           + '</div>'
         : '')
 
@@ -1256,7 +1256,7 @@ var STEPS = {
 
       + '<div class="ob-foot">'
       + '<button class="btn" onclick="goStep(2)">← 이전</button>'
-      + '<button class="btn btn-navy" onclick="doneStep(3)">다음 — 자산 업로드 →</button>'
+      + '<button class="btn btn-navy" onclick="doneStep(3)">다음 — 이미지 업로드 →</button>'
       + '</div>';
   },
 
@@ -1301,12 +1301,12 @@ var STEPS = {
       {em:'🔬',lb:'수술실.jpg',sz:'510KB'},{em:'🛏',lb:'회복실.jpg',sz:'340KB'},
     ];
 
-    return '<div class="ob-tag">STEP 4 · 자산</div>'
-      + '<h2 class="ob-title">사진 자산 업로드</h2>'
+    return '<div class="ob-tag">STEP 4 · 이미지</div>'
+      + '<h2 class="ob-title">이미지 업로드</h2>'
       + '<p class="ob-desc">B/A 사진, 의료진 프로필, 시설 사진을 업로드합니다. AI가 자동으로 분류합니다.</p>'
       + '<div class="asset-upload-zone" onclick="triggerFileUpload(true)">'
       + '<div style="font-size:32px;margin-bottom:8px">📁</div>'
-      + '<div style="font-size:14px;font-weight:500;color:var(--s700);margin-bottom:4px">사진을 드래그하거나 클릭하여 업로드</div>'
+      + '<div style="font-size:14px;font-weight:500;color:var(--s700);margin-bottom:4px">사진 또는 이미지를 드래그하거나 클릭하여 업로드</div>'
       + '<div style="font-size:12px;color:var(--s400)">PNG, JPG, WebP · 최대 10MB · AI 자동 분류</div>'
       + '</div>'
       + assetSection('✦ B/A 사진', baItems.length, true, baItems)
@@ -1538,7 +1538,7 @@ var STEPS = {
       {label:'콘텐츠 검수',           status:'ok',                 note:'10개 섹션 완료'},
       {label:'의역 검수',             status:transDone?'ok':'warn', note:transDone?'전체 검수 완료':'Step 5에서 검수 필요'},
       {label:'컴플라이언스',          status:'ok',                 note:'위반 0건'},
-      {label:'자산 업로드',           status:'ok',                 note:'B/A·의료진·시설 사진'},
+      {label:'이미지 업로드',          status:'ok',                 note:'B/A·의료진·시설 사진'},
       {label:'스키마 마크업',         status:'ok',                 note:'9개 타입 적용'},
       {label:'고정 LINE CTA',         status:'ok',                 note:'우하단 고정 활성'},
       {label:'네비 앵커 (5개)',       status:'ok',                 note:'#decision ~ #faq'},
@@ -1805,7 +1805,7 @@ function triggerFileUpload(multiple) {
 /* ── 자산 삭제 ── */
 function deleteAsset(btn, name) {
   var _card = btn.closest('.asset-card');
-  openOBModal('🗑 자산 삭제', '"<strong>' + name + '</strong>"을 삭제하시겠습니까?', function() {
+  openOBModal('🗑 이미지 삭제', '"<strong>' + name + '</strong>"을 삭제하시겠습니까?', function() {
     _card.style.opacity = '0'; _card.style.transition = 'opacity .2s';
     setTimeout(function(){ _card.remove(); }, 200);
     showToast('"' + name + '" 삭제되었습니다.', '');
