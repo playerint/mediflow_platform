@@ -12,20 +12,27 @@
 - 일본 등 외국인 환자의 의사결정·상담·전환·사후관리를 자동화하는 것이 목적이다.
 
 ### 사용자(화면)는 3종류로 나뉜다
-- **본사용 BO** — 메디힘 본사. 입점 병원 **전체를 가로질러** 본다.
+- **본사용 BO** — 본사. 입점 병원 **전체를 가로질러** 본다.
 - **병원용 BO** — 병원 운영자(상담사·실장·검수자 등). **자기 병원 것만** 본다.
 - **환자용 FO** — 환자가 보는 사이트. 병원별로 생성된다.
+
+### 핵심 흐름 (이 순서대로 데이터가 만들어진다)
+1. **본사용 BO**에서 병원을 등록하고 **9단계 온보딩**을 모두 완료하면 → 그 병원의 **환자용 사이트(FO)가 생성**된다.
+2. 생성된 병원 사이트는 **병원용 BO**에서 관리한다.
+- 즉 첫 개발 대상은 본사용 BO의 "병원 등록 + 9단계 온보딩"이다(이 데이터를 나머지가 읽어간다).
 
 ---
 
 ## 2. 기술 스택 (고정 — 임의로 바꾸지 말 것)
 
-- **백엔드(공유 코어):** Java + Spring Boot, PostgreSQL, pgvector(벡터 검색)
+- **백엔드(공유 코어):** Java 17 (JDK 17) + Spring Boot, 빌드 도구 **Gradle**, **PostgreSQL**
+  - **MVC 패턴**(Controller → Service → Repository)과 **기본 Spring Boot 프로젝트 구조**를 따른다(임의 구조 금지).
+- **AI/RAG 처리:** **별도 Python 서비스(FastAPI)** 로 분리한다. Spring Boot 안에 넣지 않는다.
+  - Spring Boot ↔ Python 서비스는 **REST API로 통신**한다.
+  - `pgvector`(벡터 검색)는 이 AI/RAG 서비스 쪽에서 사용한다.
 - **프론트엔드:** Next.js (TypeScript)
 - **공용 디자인:** ZENO 디자인 시스템 (packages/zeno-ui 공용 컴포넌트)
 - 비밀키·비밀번호 등 시크릿은 **코드에 하드코딩 금지.** `.env`로만 관리하고 `.gitignore`에 넣는다.
-
-> 확인 필요(아래 8번 참고): JDK 버전, 빌드 도구(Gradle/Maven), AI/RAG 처리 위치는 CTO 확인 후 채운다.
 
 ---
 
@@ -45,27 +52,29 @@ mediflow/
 │   │   ├── mock-data-hospital.js
 │   │   └── site-data.js        # 사이트 섹션·마케팅 데이터
 │   └── CLAUDE.md
-└── mediflow_platform/          # 플랫폼(본사) 관리자 프로토타입 (GitHub Pages)
-    ├── html/
-    ├── css/common.css
-    ├── js/
-    │   ├── config.js           # Gemini API 키 + CLINIC_TYPES
-    │   ├── sidebar.js
-    │   ├── auth.js             # 세션·RBAC (super/ops/finance)
-    │   ├── hospital_list.js    # HOSPITALS 목업 배열 (+ clinicType·specialty)
-    │   └── mock-data-platform.js
-    └── CLAUDE.md
+├── mediflow_platform/          # 플랫폼(본사) 관리자 프로토타입 (GitHub Pages)
+│   ├── html/
+│   ├── css/common.css
+│   ├── js/
+│   │   ├── config.js           # Gemini API 키 + CLINIC_TYPES
+│   │   ├── sidebar.js
+│   │   ├── auth.js             # 세션·RBAC (super/ops/finance)
+│   │   ├── hospital_list.js    # HOSPITALS 목업 배열 (+ clinicType·specialty)
+│   │   └── mock-data-platform.js
+│   └── CLAUDE.md
+└── hospital_site/              # 환자용 병원 사이트(FO) 프로토타입 (일본어)
 ```
 
 ### 목표 (모노레포 — 미착수)
 
 ```
 mediflow/
-├── core/          # Spring Boot 백엔드
+├── core/              # Spring Boot 백엔드 (Java 17, Gradle, MVC)
+├── ai-service/        # AI/RAG 처리 (별도 Python/FastAPI). core가 REST로 호출
 ├── apps/
 │   ├── platform-bo/   # Next.js — 본사용
 │   ├── hospital-bo/   # Next.js — 병원용
-│   └── patient-fo/    # Next.js — 환자용
+│   └── patient-fo/    # Next.js — 환자용(병원별 생성)
 └── packages/zeno-ui/  # 공용 컴포넌트
 ```
 
@@ -73,15 +82,24 @@ mediflow/
 
 ## 4. 절대 규칙 (어기면 안 됨)
 
+### 4-0. ★★ 데이터 보관 위치 분리 (법적 요구 — 최우선)
+- 데이터는 **보관 영역이 두 개로 나뉜다.**
+  - **플랫폼 DB (본사 · 공유):** 병원 정보, 온보딩, 계약/정산 등 운영 데이터.
+  - **병원별 DB (각 병원마다 1개):** **환자 정보와 상담 내용.** 법적 이유로 각 병원의 DB에 보관한다.
+- **환자 정보·상담 내용을 플랫폼(본사) DB에 저장하지 말 것.** 반드시 해당 병원의 DB에 저장한다.
+- 따라서 백엔드는 여러 DB에 연결되며, 요청마다 **올바른 병원 DB로 라우팅**해야 한다.
+- ⚠ 병원 DB의 물리적 위치, 정확한 법적 요건, 멀티 DB 라우팅 방식은 **CTO/법무 확인 필요**(8번 참고). 확인 전에는 이 분리 원칙만 지키고 임의로 구현 방식을 정하지 말 것.
+
 ### 4-1. ★ 멀티테넌트 병원 데이터 격리 (가장 중요)
 - 거의 모든 테이블에 `hospital_id` 컬럼이 있어야 한다.
 - **데이터를 조회/수정하는 모든 코드는 예외 없이 현재 로그인한 병원의 `hospital_id`로 필터링**해야 한다.
 - **한 병원이 다른 병원의 데이터를 절대 볼 수 없어야 한다.** (의료 데이터이므로 사고 = 치명적)
 - 이를 강제하는 **공통 함수/계층을 반드시 거쳐서만** DB에 접근한다. 개별 쿼리에서 필터를 빠뜨리는 일이 없게 한다.
 - 본사용 BO만 예외적으로 전체 병원을 조회할 수 있다(별도의 명시적 권한으로 처리).
+- (참고: 환자·상담은 4-0에 따라 병원별 DB로 물리 분리되므로, 이 `hospital_id` 필터는 특히 **공유되는 플랫폼 DB**에서 중요하다.)
 
 ### 4-2. 프론트와 백엔드는 분리한다
-- 프론트엔드(Next.js)는 **화면**을, 백엔드(Spring Boot)는 **데이터·로직·AI·DB**를 담당한다.
+- 프론트엔드(Next.js)는 **화면**을, 백엔드(Spring Boot)는 **데이터·로직·DB**를, AI/RAG는 **별도 Python 서비스**가 담당한다.
 - **프론트엔드는 데이터베이스에 직접 접근하지 않는다.** 모든 데이터는 백엔드 API를 통해서만 주고받는다.
   (이 통로 일원화가 위 4-1 격리를 가능하게 한다.)
 
@@ -91,6 +109,14 @@ mediflow/
 
 - 기존 정적 HTML 프로토타입은 **버리지 않고 "설계도"로 활용**한다. 그대로 Next.js로 재현한다.
   - 프로토타입 Raw URL 형식: `https://raw.githubusercontent.com/playerint/<repo>/main/<경로>`
+  - 세 프로토타입과 대응하는 Next.js 앱:
+
+    | 프로토타입 저장소 | 화면 | 대응 앱 |
+    |---|---|---|
+    | `mediflow_platform` | 플랫폼(본사) 관리자 | `apps/platform-bo` |
+    | `mediflow_hospital` | 병원 관리자 | `apps/hospital-bo` |
+    | `hospital_site` | 환자용 병원 사이트(FO) | `apps/patient-fo` |
+
   - 예 (플랫폼 관리자): `https://raw.githubusercontent.com/playerint/mediflow_platform/main/html/hospital_list.html`
   - 예 (병원 관리자): `https://raw.githubusercontent.com/playerint/mediflow_hospital/main/html/hospital_crm_inbox.html`
 - 화면마다 따로 만들기 전에 **공통 부분(사이드바·공용 스타일)부터** 컴포넌트로 잡는다.
@@ -149,6 +175,9 @@ mediflow/
 
 - [x] JDK 버전: **17**
 - [x] 빌드 도구: **Gradle**
-- [x] 백엔드 아키텍처: **Spring MVC 패턴** (Controller → Service → Repository)
+- [x] 백엔드 아키텍처: **Spring MVC 패턴** (Controller → Service → Repository) + 기본 Spring Boot 구조
 - [x] AI/RAG 처리: **별도 Python 서비스** (Spring Boot ↔ Python FastAPI REST 통신)
-- [ ] 데이터 분리 방식: 공유 DB + `hospital_id`(권장) vs 병원별 DB 분리
+- [x] 데이터 분리 방식: 병원 정보 → 플랫폼 DB / **환자·상담 → 병원별 DB 분리** (법적 요구로 확정)
+- [ ] ⚠ 병원별 DB의 **물리적 위치**: 병원 현장 vs 본사가 호스팅(병원별 분리)
+- [ ] ⚠ 환자·상담 데이터의 정확한 법적 요건(보관 위치·주체·암호화 등) — 법무 확인
+- [ ] 백엔드 멀티 DB 연결/라우팅 방식 (CTO가 구조 결정)
